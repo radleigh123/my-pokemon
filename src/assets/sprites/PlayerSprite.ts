@@ -47,6 +47,8 @@ export async function createPlayerSprite(assets: AssetManager): Promise<Sprite> 
     assets.loadImage(right3),
   ]);
 
+  console.log(down1);
+
   return new Sprite(
     new Map([
       [Direction.Down, [down1Image, down2Image, down3Image]],

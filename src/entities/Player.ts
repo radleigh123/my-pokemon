@@ -12,6 +12,12 @@ export class Player extends Entity {
   private readonly idleAnimation = new Animation([0], 150);
   private readonly walkAnimation = new Animation([0, 1, 0, 2], 150);
 
+  private mapWidth = Number.MAX_SAFE_INTEGER;
+  private mapHeight = Number.MAX_SAFE_INTEGER;
+
+  private nextX = 0;
+  private nextY = 0;
+
   constructor(
     x: number,
     y: number,
@@ -19,26 +25,31 @@ export class Player extends Entity {
     private readonly input: Input,
   ) {
     super(x, y, 16, 16, sprite);
+    this.nextX = x;
+    this.nextY = y;
   }
 
   public update(deltaTime: number): void {
     let moving = false;
 
+    this.nextX = this.x;
+    this.nextY = this.y;
+
     if (this.input.isPressed(Key.Up)) {
       this.direction = Direction.Up;
-      this.y -= Player.SPEED;
+      this.nextY -= Player.SPEED;
       moving = true;
     } else if (this.input.isPressed(Key.Down)) {
       this.direction = Direction.Down;
-      this.y += Player.SPEED;
+      this.nextY += Player.SPEED;
       moving = true;
     } else if (this.input.isPressed(Key.Left)) {
       this.direction = Direction.Left;
-      this.x -= Player.SPEED;
+      this.nextX -= Player.SPEED;
       moving = true;
     } else if (this.input.isPressed(Key.Right)) {
       this.direction = Direction.Right;
-      this.x += Player.SPEED;
+      this.nextX += Player.SPEED;
       moving = true;
     }
 
@@ -63,5 +74,45 @@ export class Player extends Entity {
       this.input.isPressed(Key.Left) ||
       this.input.isPressed(Key.Right)
     );
+  }
+
+  public setMapSize(width: number, height: number): void {
+    this.mapWidth = width;
+    this.mapHeight = height;
+  }
+
+  public getNextPosition(): { x: number; y: number } {
+    return {
+      x: this.nextX,
+      y: this.nextY,
+    };
+  }
+
+  public getFacingTile(): {
+    x: number;
+    y: number;
+  } {
+    let x = this.x;
+    let y = this.y;
+
+    switch (this.direction) {
+      case Direction.Up:
+        y -= 16;
+        break;
+
+      case Direction.Down:
+        y += 16;
+        break;
+
+      case Direction.Left:
+        x -= 16;
+        break;
+
+      case Direction.Right:
+        x += 16;
+        break;
+    }
+
+    return { x, y };
   }
 }

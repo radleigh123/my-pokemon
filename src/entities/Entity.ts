@@ -44,4 +44,34 @@ export abstract class Entity {
   public getHeight(): number {
     return this.height;
   }
+
+  public setPosition(x: number, y: number): void {
+    this.x = x;
+    this.y = y;
+  }
+
+  public getCollisionX(): number {
+    return this.x + 2;
+  }
+
+  public getCollisionY(): number {
+    return this.y + 8;
+  }
+
+  public getCollisionWidth(): number {
+    return 12;
+  }
+
+  public getCollisionHeight(): number {
+    return 8;
+  }
+
+  public intersects(other: Entity): boolean {
+    return (
+      this.x < other.x + other.width &&
+      this.x + this.width > other.x &&
+      this.y < other.y + other.height &&
+      this.y + this.height > other.y
+    );
+  }
 }
