@@ -37,7 +37,7 @@ const overlay = computed(() => {
 <style scoped>
 .gba {
   position: relative;
-  width: 950px;
+  width: 1300px;
   margin: auto;
 }
 
@@ -51,11 +51,11 @@ const overlay = computed(() => {
 .screen {
   position: absolute;
 
-  left: 189px;
-  top: 103px;
+  left: 247px;
+  top: 137px;
 
-  width: 584px;
-  height: 300px;
+  width: 830px;
+  height: 425px;
 
   overflow: hidden;
 

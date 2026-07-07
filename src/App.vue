@@ -2,8 +2,9 @@
 import { onBeforeMount, onMounted, ref } from 'vue';
 import GbaOverlay from './components/GbaOverlay.vue';
 import IntroVideo from './components/IntroVideo.vue';
-import HomeScreen from './components/HomeScreen.vue';
+// import HomeScreen from './components/HomeScreen.vue';
 import { useInputStore } from './stores/input.ts';
+import GameCanvas from './components/GameCanvas.vue';
 
 const input = useInputStore()
 
@@ -29,7 +30,7 @@ function goHome() {
   <GbaOverlay>
     <IntroVideo v-if="screen === 'intro'" @start="goHome" />
 
-    <HomeScreen v-else />
+    <GameCanvas v-else />
   </GbaOverlay>
 </template>
 
