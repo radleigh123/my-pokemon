@@ -1,6 +1,6 @@
 export class Renderer {
-  public static readonly WIDTH = 480;
-  public static readonly HEIGHT = 320;
+  public static readonly WIDTH = 240;
+  public static readonly HEIGHT = 160;
 
   private backgroundColor = "black";
 
@@ -67,5 +67,23 @@ export class Renderer {
     this.context.strokeStyle = "red";
 
     this.context.strokeRect(x - this.cameraX, y - this.cameraY, width, height);
+  }
+
+  public drawMapCentered(
+    image: HTMLImageElement
+  ): void {
+
+    const x =
+      (this.canvas.width - image.width) / 2;
+
+    const y =
+      (this.canvas.height - image.height) / 2;
+
+    this.context.drawImage(
+      image,
+      Math.round(x - this.cameraX),
+      Math.round(y - this.cameraY)
+    );
+
   }
 }

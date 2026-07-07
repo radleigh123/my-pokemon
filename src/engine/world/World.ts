@@ -55,7 +55,8 @@ export class World {
   public render(renderer: Renderer): void {
     renderer.setCamera(this.camera.getX(), this.camera.getY());
 
-    renderer.drawMap(this.map.getImage(), 0, 0);
+    // renderer.drawMap(this.map.getImage(), 0, 0);
+    renderer.drawMapCentered(this.map.getImage())
 
     for (const entity of this.entities) {
       renderer.drawSprite(entity.getCurrentFrame(), entity.getX(), entity.getY());

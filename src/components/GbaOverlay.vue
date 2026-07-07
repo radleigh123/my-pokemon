@@ -51,11 +51,16 @@ const overlay = computed(() => {
 .screen {
   position: absolute;
 
-  left: 247px;
-  top: 137px;
+/*   left: 361px;
+    top: 138px;
 
-  width: 830px;
-  height: 425px;
+  width: 1361px;
+    height: 641px; */
+  left: 27.8%;
+  top: 18.5%;
+
+  width: 45.3%;
+    height: 56.7%;
 
   overflow: hidden;
 

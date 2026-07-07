@@ -10,6 +10,9 @@ export class Camera {
 
     this.x = Math.max(0, Math.min(this.x, mapWidth - Renderer.WIDTH));
     this.y = Math.max(0, Math.min(this.y, mapHeight - Renderer.HEIGHT));
+
+    console.log(`Camera: ${this.x}:${this.y}`);
+
   }
 
   public getX(): number {
