@@ -40,23 +40,50 @@ export class World {
         this.player.getCollisionHeight(),
       )
     ) {
-      this.player.setPosition(next.x, next.y);
+      const collisionX =
+        next.x + (this.player.getCollisionX() - this.player.getX());
+
+      const collisionY =
+        next.y + (this.player.getCollisionY() - this.player.getY());
+
+      const blocked = this.map.isBlocked(
+        collisionX,
+        collisionY,
+        this.player.getCollisionWidth(),
+        this.player.getCollisionHeight()
+      );
+
+      console.log({
+        nextX: next.x,
+        nextY: next.y,
+        collisionX,
+        collisionY,
+        blocked
+      });
+
+      if (!blocked) {
+        console.log("SETTING", next.y);
+
+        this.player.setPosition(next.x, next.y);
+
+        console.log("PLAYER", this.player.getY());
+      }
     }
     // this.player.setPosition(next.x, next.y);
 
     this.camera.follow(
       this.player.getCollisionX() + this.player.getCollisionWidth() / 2,
       this.player.getCollisionY() + this.player.getCollisionHeight() / 2,
-      this.map.getWidth(),
-      this.map.getHeight(),
+      this.map.getPixelWidth(),
+      this.map.getPixelHeight(),
     );
   }
 
   public render(renderer: Renderer): void {
     renderer.setCamera(this.camera.getX(), this.camera.getY());
 
-    // renderer.drawMap(this.map.getImage(), 0, 0);
-    renderer.drawMapCentered(this.map.getImage())
+    renderer.drawMap(this.map);
+    // renderer.drawMapCentered(this.map.getImage())
 
     for (const entity of this.entities) {
       renderer.drawSprite(entity.getCurrentFrame(), entity.getX(), entity.getY());
@@ -68,6 +95,7 @@ export class World {
       this.player.getCollisionWidth(),
       this.player.getCollisionHeight(),
     );
+    renderer.drawPoint(this.player.getX(), this.player.getY())
   }
 
   public interact(): void {

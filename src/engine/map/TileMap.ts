@@ -3,23 +3,42 @@ import { TileType } from "./TileType";
 export class TileMap {
   public static readonly TILE_SIZE = 16;
 
+  private spawnX = 6
+  private spawnY = 8
+
   constructor(
     private readonly image: HTMLImageElement,
-    private readonly width: number,
-    private readonly height: number,
+    private readonly columns: number,
+    private readonly rows: number,
     private readonly tiles: TileType[][],
   ) {}
+
+  public getSpawnX(): number {
+    return this.spawnX
+  }
+
+  public getSpawnY(): number {
+    return this.spawnY
+  }
 
   public getImage(): HTMLImageElement {
     return this.image;
   }
 
-  public getWidth(): number {
-    return this.width;
+  public getColumns(): number {
+    return this.columns;
   }
 
-  public getHeight(): number {
-    return this.height;
+  public getRows(): number {
+    return this.rows;
+  }
+
+  public getPixelWidth(): number {
+    return this.columns * TileMap.TILE_SIZE
+  }
+
+  public getPixelHeight(): number {
+    return this.rows * TileMap.TILE_SIZE
   }
 
   public getTile(pixelX: number, pixelY: number): TileType {

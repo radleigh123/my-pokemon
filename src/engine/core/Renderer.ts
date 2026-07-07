@@ -1,3 +1,5 @@
+import { TileMap } from "../map/TileMap";
+
 export class Renderer {
   public static readonly WIDTH = 240;
   public static readonly HEIGHT = 160;
@@ -37,11 +39,17 @@ export class Renderer {
   }
 
   public drawSprite(sprite: HTMLImageElement, x: number, y: number): void {
-    this.context.drawImage(sprite, Math.round(x - this.cameraX), Math.round(y - this.cameraY));
+    this.context.drawImage(sprite, Math.round(x - this.cameraX), Math.round(y - (sprite.height - 16) - this.cameraY));
   }
 
-  public drawMap(image: HTMLImageElement, x: number, y: number): void {
-    this.context.drawImage(image, Math.round(x - this.cameraX), Math.round(y - this.cameraY));
+  public drawMap(map: TileMap): void {
+    this.context.drawImage(
+      map.getImage(),
+      Math.round(- this.cameraX),
+      Math.round(- this.cameraY),
+      map.getPixelWidth(),
+      map.getPixelHeight()
+    );
   }
 
   public setCamera(x: number, y: number): void {
@@ -66,7 +74,23 @@ export class Renderer {
   public drawRectangle(x: number, y: number, width: number, height: number): void {
     this.context.strokeStyle = "red";
 
-    this.context.strokeRect(x - this.cameraX, y - this.cameraY, width, height);
+    this.context.strokeRect(
+      x - this.cameraX,
+      y - this.cameraY,
+      width,
+      height
+    );
+  }
+
+  public drawPoint(x: number, y: number): void {
+    this.context.fillStyle = "yellow";
+
+    this.context.fillRect(
+      Math.round(x - this.cameraX) - 1,
+      Math.round(y - this.cameraY) - 1,
+      3,
+      3
+    );
   }
 
   public drawMapCentered(

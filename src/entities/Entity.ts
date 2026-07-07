@@ -51,19 +51,19 @@ export abstract class Entity {
   }
 
   public getCollisionX(): number {
-    return this.x + 2;
+    return this.x;
   }
 
   public getCollisionY(): number {
-    return this.y + 8;
+    return this.y;
   }
 
   public getCollisionWidth(): number {
-    return 12;
+    return 16;
   }
 
   public getCollisionHeight(): number {
-    return 8;
+    return 16;
   }
 
   public intersects(other: Entity): boolean {

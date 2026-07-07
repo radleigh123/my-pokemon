@@ -8,6 +8,7 @@ import { Player } from "@/entities/Player";
 import { Camera } from "./Camera";
 import { createLab } from "@/maps/Lab";
 import { World } from "../world/World";
+import { TileMap } from "../map/TileMap";
 
 export class Game {
   private readonly loop: GameLoop;
@@ -35,9 +36,9 @@ export class Game {
 
     const sprite = await createPlayerSprite(this.assets);
 
-    console.log(sprite);
+    console.log("Sprite", sprite);
 
-    const player = new Player(100, 60, sprite, this.input);
+    const player = new Player(map.getSpawnX() * TileMap.TILE_SIZE, map.getSpawnY() * TileMap.TILE_SIZE, sprite, this.input);
     console.log("loading player...");
 
     this.world = new World(map, player, this.camera);

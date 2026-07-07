@@ -5,11 +5,51 @@ export class Camera {
   private y = 0;
 
   public follow(targetX: number, targetY: number, mapWidth: number, mapHeight: number): void {
-    this.x = targetX - Renderer.WIDTH / 2;
+
+    if (mapWidth <= Renderer.WIDTH) {
+      this.x = -(Renderer.WIDTH - mapWidth) / 2;
+    } else {
+      this.x = targetX - Renderer.WIDTH / 2;
+
+      this.x = Math.max(
+        0,
+        Math.min(this.x, mapWidth - Renderer.WIDTH)
+      );
+    }
+
+    if (mapHeight <= Renderer.HEIGHT) {
+      this.y = -(Renderer.HEIGHT - mapHeight) / 2;
+    } else {
+      this.y = targetY - Renderer.HEIGHT / 2;
+
+      this.y = Math.max(
+        0,
+        Math.min(this.y, mapHeight - Renderer.HEIGHT)
+      );
+    }
+
+    /* this.x = targetX - Renderer.WIDTH / 2;
     this.y = targetY - Renderer.HEIGHT / 2;
 
-    this.x = Math.max(0, Math.min(this.x, mapWidth - Renderer.WIDTH));
-    this.y = Math.max(0, Math.min(this.y, mapHeight - Renderer.HEIGHT));
+    const maxX = Math.max(
+      0,
+      mapWidth - Renderer.WIDTH
+    );
+
+    const maxY = Math.max(
+      0,
+      mapHeight - Renderer.HEIGHT
+    );
+
+    this.x = Math.max(
+      0,
+      Math.min(this.x, maxX)
+    );
+
+    this.y = Math.max(
+      0,
+      Math.min(this.y, maxY)
+    ); */
 
     console.log(`Camera: ${this.x}:${this.y}`);
 

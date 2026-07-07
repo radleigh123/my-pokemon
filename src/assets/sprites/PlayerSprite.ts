@@ -47,7 +47,7 @@ export async function createPlayerSprite(assets: AssetManager): Promise<Sprite> 
     assets.loadImage(right3),
   ]);
 
-  console.log(down1);
+  console.log(down1Image.width, down1Image.height);
 
   return new Sprite(
     new Map([
