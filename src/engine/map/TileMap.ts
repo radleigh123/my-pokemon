@@ -1,11 +1,12 @@
 import type { Music } from "@/audio/Music";
 import { TileType } from "./TileType";
+import type { MapObject } from "./MapObject";
 
 export class TileMap {
   public static readonly TILE_SIZE = 16;
 
-  private spawnX = 6;
-  private spawnY = 8;
+  private spawnX = 15.5;
+  private spawnY = 17.35;
 
   constructor(
     private readonly image: HTMLImageElement,

@@ -27,32 +27,6 @@ export class Camera {
         Math.min(this.y, mapHeight - Renderer.HEIGHT)
       );
     }
-
-    /* this.x = targetX - Renderer.WIDTH / 2;
-    this.y = targetY - Renderer.HEIGHT / 2;
-
-    const maxX = Math.max(
-      0,
-      mapWidth - Renderer.WIDTH
-    );
-
-    const maxY = Math.max(
-      0,
-      mapHeight - Renderer.HEIGHT
-    );
-
-    this.x = Math.max(
-      0,
-      Math.min(this.x, maxX)
-    );
-
-    this.y = Math.max(
-      0,
-      Math.min(this.y, maxY)
-    ); */
-
-    console.log(`Camera: ${this.x}:${this.y}`);
-
   }
 
   public getX(): number {
