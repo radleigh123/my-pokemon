@@ -1,24 +1,30 @@
+import type { Music } from "@/audio/Music";
 import { TileType } from "./TileType";
 
 export class TileMap {
   public static readonly TILE_SIZE = 16;
 
-  private spawnX = 6
-  private spawnY = 8
+  private spawnX = 6;
+  private spawnY = 8;
 
   constructor(
     private readonly image: HTMLImageElement,
     private readonly columns: number,
     private readonly rows: number,
     private readonly tiles: TileType[][],
+    private readonly music: Music,
   ) {}
 
+  public getMusic(): Music {
+    return this.music;
+  }
+
   public getSpawnX(): number {
-    return this.spawnX
+    return this.spawnX;
   }
 
   public getSpawnY(): number {
-    return this.spawnY
+    return this.spawnY;
   }
 
   public getImage(): HTMLImageElement {
@@ -34,11 +40,11 @@ export class TileMap {
   }
 
   public getPixelWidth(): number {
-    return this.columns * TileMap.TILE_SIZE
+    return this.columns * TileMap.TILE_SIZE;
   }
 
   public getPixelHeight(): number {
-    return this.rows * TileMap.TILE_SIZE
+    return this.rows * TileMap.TILE_SIZE;
   }
 
   public getTile(pixelX: number, pixelY: number): TileType {

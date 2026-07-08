@@ -20,7 +20,7 @@ export abstract class Entity {
     this.width = width;
     this.height = height;
 
-    this.direction = Direction.Down;
+    this.direction = Direction.Up;
 
     this.sprite = sprite;
   }

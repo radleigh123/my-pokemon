@@ -7,4 +7,12 @@ export class Input {
   public isPressed(key: Key): boolean {
     return this.keyboard.isPressed(key);
   }
+
+  public isJustPressed(key: Key): boolean {
+    return this.keyboard.isJustPressed(key);
+  }
+
+  public endFrame(): void {
+    this.keyboard.endFrame();
+  }
 }

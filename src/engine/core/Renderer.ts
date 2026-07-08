@@ -1,4 +1,5 @@
 import { TileMap } from "../map/TileMap";
+import { TileType } from "../map/TileType";
 
 export class Renderer {
   public static readonly WIDTH = 240;
@@ -39,16 +40,20 @@ export class Renderer {
   }
 
   public drawSprite(sprite: HTMLImageElement, x: number, y: number): void {
-    this.context.drawImage(sprite, Math.round(x - this.cameraX), Math.round(y - (sprite.height - 16) - this.cameraY));
+    this.context.drawImage(
+      sprite,
+      Math.round(x - this.cameraX),
+      Math.round(y - (sprite.height - 16) - this.cameraY),
+    );
   }
 
   public drawMap(map: TileMap): void {
     this.context.drawImage(
       map.getImage(),
-      Math.round(- this.cameraX),
-      Math.round(- this.cameraY),
+      Math.round(-this.cameraX),
+      Math.round(-this.cameraY),
       map.getPixelWidth(),
-      map.getPixelHeight()
+      map.getPixelHeight(),
     );
   }
 
@@ -74,40 +79,32 @@ export class Renderer {
   public drawRectangle(x: number, y: number, width: number, height: number): void {
     this.context.strokeStyle = "red";
 
-    this.context.strokeRect(
-      x - this.cameraX,
-      y - this.cameraY,
-      width,
-      height
-    );
+    this.context.strokeRect(x - this.cameraX, y - this.cameraY, width, height);
   }
 
   public drawPoint(x: number, y: number): void {
     this.context.fillStyle = "yellow";
 
-    this.context.fillRect(
-      Math.round(x - this.cameraX) - 1,
-      Math.round(y - this.cameraY) - 1,
-      3,
-      3
-    );
+    this.context.fillRect(Math.round(x - this.cameraX) - 1, Math.round(y - this.cameraY) - 1, 3, 3);
   }
 
-  public drawMapCentered(
-    image: HTMLImageElement
-  ): void {
+  public drawCollision(map: TileMap): void {
+    for (let row = 0; row < map.getRows(); row++) {
+      for (let col = 0; col < map.getColumns(); col++) {
+        if (map.getTile(col * TileMap.TILE_SIZE, row * TileMap.TILE_SIZE) === TileType.Wall) {
+          this.context.strokeStyle = "red";
 
-    const x =
-      (this.canvas.width - image.width) / 2;
+          this.context.strokeRect(col * 16 - this.cameraX, row * 16 - this.cameraY, 16, 16);
+        }
+      }
+    }
+  }
 
-    const y =
-      (this.canvas.height - image.height) / 2;
+  public drawMapCentered(image: HTMLImageElement): void {
+    const x = (this.canvas.width - image.width) / 2;
 
-    this.context.drawImage(
-      image,
-      Math.round(x - this.cameraX),
-      Math.round(y - this.cameraY)
-    );
+    const y = (this.canvas.height - image.height) / 2;
 
+    this.context.drawImage(image, Math.round(x - this.cameraX), Math.round(y - this.cameraY));
   }
 }

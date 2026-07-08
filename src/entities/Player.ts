@@ -88,47 +88,51 @@ export class Player extends Entity {
     };
   }
 
-  public getFacingTile(): {
-    x: number;
-    y: number;
-  } {
-    let x = this.x;
-    let y = this.y;
+  public getFacingTile(): { x: number; y: number } {
+    let column = Math.floor(this.getCollisionX() / 16);
+    let row = Math.floor(this.getCollisionY() / 16);
 
     switch (this.direction) {
       case Direction.Up:
-        y -= 16;
+        row--;
         break;
 
       case Direction.Down:
-        y += 16;
+        row++;
         break;
 
       case Direction.Left:
-        x -= 16;
+        column--;
         break;
 
       case Direction.Right:
-        x += 16;
+        column++;
         break;
     }
 
-    return { x, y };
+    return {
+      x: column * 16,
+      y: row * 16,
+    };
   }
 
   public override getCollisionX(): number {
-    return this.x;
+    return this.x + 2;
   }
 
   public override getCollisionY(): number {
-    return this.y;
+    return this.y + 4;
   }
 
   public override getCollisionWidth(): number {
-    return 16;
+    return 12;
   }
 
   public override getCollisionHeight(): number {
-    return 16;
+    return 12;
+  }
+
+  public getDirection(): Direction {
+    return this.direction;
   }
 }

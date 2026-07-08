@@ -6,7 +6,10 @@ import { TileMap } from "../map/TileMap";
 import { Player } from "@/entities/Player";
 import { Entity } from "@/entities/Entity";
 import { DialogueManager } from "@/dialogue/DialogueManager";
+import { Sprite } from "../animation/Sprite";
 import { NPC } from "@/entities/NPC";
+import { Dialogue } from "@/dialogue/Dialogue";
+import { opposite } from "@/entities/Direction";
 
 export class World {
   private readonly entities: Entity[];
@@ -17,59 +20,64 @@ export class World {
   constructor(
     private readonly map: TileMap,
     player: Player,
+    npcSprite: Sprite,
     private readonly camera: Camera,
   ) {
     this.player = player;
+    this.npcs = [
+      new NPC(
+        96,
+        64,
+        npcSprite,
+        new Dialogue("Professor Oak", [
+          "This is Biiiiirrrccchhh!!!",
+          "Choose my Poke-",
+          "...",
+          "I mean choose your starter pokemon.",
+        ]),
+      ),
+    ];
     this.entities = [player, ...this.npcs];
 
     // player.setMapSize(map.getWidth(), map.getHeight());
   }
 
   public update(deltaTime: number): void {
+    if (this.dialogue.isActive()) {
+      return;
+    }
+
     for (const entity of this.entities) {
       entity.update(deltaTime);
     }
 
     const next = this.player.getNextPosition();
 
-    if (
-      !this.map.isBlocked(
-        next.x + (this.player.getCollisionX() - this.player.getX()),
-        next.y + (this.player.getCollisionY() - this.player.getY()),
-        this.player.getCollisionWidth(),
-        this.player.getCollisionHeight(),
-      )
-    ) {
-      const collisionX =
-        next.x + (this.player.getCollisionX() - this.player.getX());
+    const collisionX = next.x + (this.player.getCollisionX() - this.player.getX());
+    const collisionY = next.y + (this.player.getCollisionY() - this.player.getY());
 
-      const collisionY =
-        next.y + (this.player.getCollisionY() - this.player.getY());
+    const blocked = this.map.isBlocked(
+      collisionX,
+      collisionY,
+      this.player.getCollisionWidth(),
+      this.player.getCollisionHeight(),
+    );
 
-      const blocked = this.map.isBlocked(
-        collisionX,
-        collisionY,
-        this.player.getCollisionWidth(),
-        this.player.getCollisionHeight()
-      );
+    console.log({
+      nextX: next.x,
+      nextY: next.y,
+      collisionX,
+      collisionY,
+      blocked,
+    });
 
-      console.log({
-        nextX: next.x,
-        nextY: next.y,
-        collisionX,
-        collisionY,
-        blocked
-      });
+    if (!blocked) {
+      console.log("SETTING", next.y);
 
-      if (!blocked) {
-        console.log("SETTING", next.y);
+      this.player.setPosition(next.x, next.y);
 
-        this.player.setPosition(next.x, next.y);
-
-        console.log("PLAYER", this.player.getY());
-      }
+      console.log("PLAYER", this.player.getY());
     }
-    // this.player.setPosition(next.x, next.y);
 
     this.camera.follow(
       this.player.getCollisionX() + this.player.getCollisionWidth() / 2,
@@ -83,9 +91,19 @@ export class World {
     renderer.setCamera(this.camera.getX(), this.camera.getY());
 
     renderer.drawMap(this.map);
-    // renderer.drawMapCentered(this.map.getImage())
 
-    for (const entity of this.entities) {
+    // Collision drawing
+    renderer.drawCollision(this.map);
+
+    const renderQueue = [...this.entities];
+
+    renderQueue.sort((a, b) => {
+      return (
+        a.getCollisionY() + a.getCollisionHeight() - (b.getCollisionY() + b.getCollisionHeight())
+      );
+    });
+
+    for (const entity of renderQueue) {
       renderer.drawSprite(entity.getCurrentFrame(), entity.getX(), entity.getY());
     }
 
@@ -95,19 +113,32 @@ export class World {
       this.player.getCollisionWidth(),
       this.player.getCollisionHeight(),
     );
-    renderer.drawPoint(this.player.getX(), this.player.getY())
+    renderer.drawPoint(this.player.getX(), this.player.getY());
   }
 
-  public interact(): void {
+  public interact(): boolean {
+    if (this.dialogue.isActive()) {
+      this.dialogue.next();
+      return true;
+    }
+
     const tile = this.player.getFacingTile();
 
     for (const npc of this.npcs) {
-      if (npc.getX() === tile.x && npc.getY() === tile.y) {
-        this.dialogue.start(npc.getDialogue());
+      const npcColumn = Math.floor(npc.getCollisionX() / 16);
+      const npcRow = Math.floor(npc.getCollisionY() / 16);
 
-        return;
+      const targetColumn = Math.floor(tile.x / 16);
+      const targetRow = Math.floor(tile.y / 16);
+
+      if (npcColumn === targetColumn && npcRow === targetRow) {
+        npc.face(opposite(this.player.getDirection()));
+        this.dialogue.start(npc.getDialogue());
+        return true;
       }
     }
+
+    return false;
   }
 
   public getDialogue(): DialogueManager {

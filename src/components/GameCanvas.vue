@@ -1,23 +1,55 @@
 <script setup lang="ts">
-import { Game } from "@/engine/core/Game"
-import { onBeforeMount, onMounted, ref } from "vue"
+import { ref, onMounted, onBeforeUnmount } from "vue";
 
-const canvas = ref<HTMLCanvasElement>()
-let game: Game
+import { Game } from "@/engine/core/Game";
+import DialogueBox from "./DialogueBox.vue";
+
+const canvas = ref<HTMLCanvasElement>();
+
+let game: Game;
+
+const speaker = ref("");
+const text = ref("");
+const visible = ref(false);
+
+let uiLoop = 0;
+
+function updateUI() {
+  const dialogue = game.getDialogue();
+
+  console.log("DIALOGUEACTIVE", dialogue.isActive());
+
+  visible.value = dialogue.isActive();
+  speaker.value = dialogue.getSpeaker();
+  text.value = dialogue.getCurrentLine();
+
+  uiLoop = requestAnimationFrame(updateUI);
+}
 
 onMounted(async () => {
-  if (!canvas.value) return
+  if (!canvas.value) {
+    return;
+  }
 
-  game = new Game(canvas.value)
-  await game.start()
-})
+  game = new Game(canvas.value);
 
-onBeforeMount(() => {
-  // game.stop()
-})
+  await game.start();
+
+  updateUI();
+});
+
+onBeforeUnmount(() => {
+  cancelAnimationFrame(uiLoop);
+  game.stop();
+});
 </script>
 
 <template>
+  <DialogueBox
+  v-if="visible"
+  :speaker="speaker"
+  :text="text"
+   />
   <canvas ref="canvas"></canvas>
 </template>
 

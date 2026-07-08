@@ -9,6 +9,11 @@ import { Camera } from "./Camera";
 import { createLab } from "@/maps/Lab";
 import { World } from "../world/World";
 import { TileMap } from "../map/TileMap";
+import { createNpcSprite } from "@/assets/sprites/NpcSprite";
+import { Key } from "../input/Key";
+import { AudioManager } from "@/audio/AudioManager";
+import { Music } from "@/audio/Music";
+import { Sound } from "@/audio/Sound";
 
 export class Game {
   private readonly loop: GameLoop;
@@ -17,6 +22,7 @@ export class Game {
   private readonly keyboard = new Keyboard();
   private readonly input = new Input(this.keyboard);
   private readonly camera = new Camera();
+  private readonly audio = new AudioManager();
 
   private world!: World;
 
@@ -34,28 +40,54 @@ export class Game {
 
     const map = await createLab(this.assets);
 
+    await this.audio.play(map.getMusic());
+
     const sprite = await createPlayerSprite(this.assets);
+
+    const npcSprite = await createNpcSprite(this.assets);
 
     console.log("Sprite", sprite);
 
-    const player = new Player(map.getSpawnX() * TileMap.TILE_SIZE, map.getSpawnY() * TileMap.TILE_SIZE, sprite, this.input);
+    const player = new Player(
+      map.getSpawnX() * TileMap.TILE_SIZE,
+      map.getSpawnY() * TileMap.TILE_SIZE + 65,
+      sprite,
+      this.input,
+    );
     console.log("loading player...");
 
-    this.world = new World(map, player, this.camera);
+    this.world = new World(map, player, npcSprite, this.camera);
 
     this.loop.start();
   }
 
   public stop(): void {
+    this.audio.stop();
     this.loop.stop();
   }
 
   private update = (deltaTime: number): void => {
+    if (this.input.isJustPressed(Key.A)) {
+      if (this.world.interact()) {
+        this.audio.button();
+      }
+    }
+
     this.world.update(deltaTime);
+
+    this.input.endFrame();
   };
 
   private render = (): void => {
     this.renderer.clear();
     this.world.render(this.renderer);
   };
+
+  public getDialogue() {
+    return this.world.getDialogue();
+  }
+
+  public getAudio(): AudioManager {
+    return this.audio;
+  }
 }
