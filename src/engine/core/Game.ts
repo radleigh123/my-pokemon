@@ -23,8 +23,9 @@ export class Game {
   private readonly maps;
 
   private world!: World;
-
-  // private readonly animation = new Animation(3, 150); // test
+  private player!: Player;
+  private currentMap = MapId.Lab;
+  private loadingMap = false;
 
   constructor(canvas: HTMLCanvasElement) {
     this.renderer = new Renderer(canvas);
@@ -44,7 +45,7 @@ export class Game {
 
     const sprite = await createPlayerSprite(this.assets);
 
-    const player = new Player(
+    /* this.player = new Player(
       map.getSpawnX() * TileMap.TILE_SIZE,
       map.getSpawnY() * TileMap.TILE_SIZE + 65,
       sprite,
@@ -52,7 +53,12 @@ export class Game {
     );
     console.log("loading player...");
 
-    this.world = new World(map, player, gameMap.npcs, this.camera);
+    this.world = new World(map, this.player, gameMap.npcs, this.camera);
+
+    this.loop.start(); */
+    this.player = new Player(0, 0, sprite, this.input);
+
+    await this.loadMap(MapId.Lab);
 
     this.loop.start();
   }
@@ -69,7 +75,23 @@ export class Game {
       }
     }
 
+    if (this.loadingMap) {
+      this.input.endFrame();
+      return;
+    }
+
     this.world.update(deltaTime);
+
+    const warp = this.world.getPendingWarp();
+
+    if (warp) {
+      console.log("Destination:", MapId[warp.destination]);
+      this.loadingMap = true;
+
+      void this.loadMap(warp.destination, warp.spawnColumn, warp.spawnRow).finally(() => {
+        this.loadingMap = false;
+      });
+    }
 
     this.input.endFrame();
   };
@@ -85,5 +107,23 @@ export class Game {
 
   public getAudio(): AudioManager {
     return this.audio;
+  }
+
+  private async loadMap(id: MapId, spawnColumn?: number, spawnRow?: number): Promise<void> {
+    console.log("Loading map:", MapId[id]);
+    const gameMap = await this.maps.load(id);
+    console.log(gameMap);
+    const map = gameMap.tileMap;
+
+    const column = spawnColumn ?? map.getSpawnX();
+    const row = spawnRow ?? map.getSpawnY();
+
+    this.player.setPosition(column * TileMap.TILE_SIZE, row * TileMap.TILE_SIZE);
+
+    await this.audio.play(map.getMusic());
+
+    this.world = new World(map, this.player, gameMap.npcs, this.camera);
+
+    this.currentMap = id;
   }
 }

@@ -100,6 +100,20 @@ export class Renderer {
     }
   }
 
+  public drawWarps(map: TileMap): void {
+    this.context.strokeStyle = "cyan";
+    this.context.lineWidth = 2;
+
+    for (const warp of map.getWarps()) {
+      this.context.strokeRect(
+        warp.column * TileMap.TILE_SIZE - this.cameraX,
+        warp.row * TileMap.TILE_SIZE - this.cameraY,
+        warp.width,
+        warp.height,
+      );
+    }
+  }
+
   public drawMapCentered(image: HTMLImageElement): void {
     const x = (this.canvas.width - image.width) / 2;
 

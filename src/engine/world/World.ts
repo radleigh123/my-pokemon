@@ -76,9 +76,6 @@ export class World {
 
     renderer.drawMap(this.map);
 
-    // Collision drawing
-    renderer.drawCollision(this.map);
-
     const renderQueue = [...this.entities];
 
     renderQueue.sort((a, b) => {
@@ -91,12 +88,14 @@ export class World {
       renderer.drawSprite(entity.getCurrentFrame(), entity.getX(), entity.getY());
     }
 
-    renderer.drawRectangle(
-      this.player.getCollisionX(),
-      this.player.getCollisionY(),
-      this.player.getCollisionWidth(),
-      this.player.getCollisionHeight(),
-    );
+    renderer.drawCollision(this.map);
+    renderer.drawWarps(this.map);
+    // renderer.drawRectangle(
+    //   this.player.getCollisionX(),
+    //   this.player.getCollisionY(),
+    //   this.player.getCollisionWidth(),
+    //   this.player.getCollisionHeight(),
+    // );
     renderer.drawPoint(this.player.getX(), this.player.getY());
   }
 
@@ -127,5 +126,20 @@ export class World {
 
   public getDialogue(): DialogueManager {
     return this.dialogue;
+  }
+
+  public getPendingWarp() {
+    const warp = this.map.getWarp(
+      this.player.getCollisionX(),
+      this.player.getCollisionY(),
+      this.player.getCollisionWidth(),
+      this.player.getCollisionHeight(),
+    );
+
+    if (warp) {
+      console.log("Warp detected", warp);
+    }
+
+    return warp;
   }
 }

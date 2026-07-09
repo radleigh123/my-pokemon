@@ -9,6 +9,8 @@ import { createNpcSprite } from "@/assets/sprites/NpcSprite";
 import { NPC } from "@/entities/NPC";
 import { Dialogue } from "@/dialogue/Dialogue";
 import { Direction } from "@/entities/Direction";
+import { MapId } from "@/engine/map/MapManager";
+import type { Warp } from "@/engine/map/Warp";
 
 export async function createLab(assets: AssetManager): Promise<GameMap> {
   const image = await assets.loadImage(lab);
@@ -26,14 +28,29 @@ export async function createLab(assets: AssetManager): Promise<GameMap> {
 
   const tiles = createCollisionGrid();
 
-  const map = new TileMap(image, columns, rows, tiles, Music.Lab);
+  const warps: Warp[] = [
+    {
+      column: 15,
+      row: 22,
+
+      width: 16,
+      height: 16,
+
+      destination: MapId.Littleroot,
+
+      spawnColumn: 16,
+      spawnRow: 24,
+    },
+  ];
+
+  const map = new TileMap(image, columns, rows, tiles, Music.Lab, warps);
 
   const npcSprite = await createNpcSprite(assets);
 
   const npcs = [
     new NPC(
       240,
-      220,
+      224,
       npcSprite,
       new Dialogue("Professor Oak", [
         "This is Biiiiirrrccchhh!!!",

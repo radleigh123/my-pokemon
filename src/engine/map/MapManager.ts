@@ -16,10 +16,18 @@ export class MapManager {
   public async load(id: MapId): Promise<GameMap> {
     switch (id) {
       case MapId.Lab:
-        return createLab(this.assets);
+        return await createLab(this.assets);
 
-      case MapId.Littleroot:
-        return createLittleroot(this.assets);
+      // case MapId.Littleroot:
+      //   return await createLittleroot(this.assets);
+      case MapId.Littleroot: {
+        const map = await createLittleroot(this.assets);
+        console.log("MapManager:", map);
+        return map;
+      }
+
+      default:
+        throw new Error(`Unknown map ${id}`);
     }
   }
 }

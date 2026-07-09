@@ -1,11 +1,12 @@
 import type { Music } from "@/audio/Music";
 import { TileType } from "./TileType";
+import type { Warp } from "./Warp";
 
 export class TileMap {
   public static readonly TILE_SIZE = 16;
 
-  private spawnX = 15.5;
-  private spawnY = 17.9;
+  private spawnX = 16;
+  private spawnY = 21.9;
 
   constructor(
     private readonly image: HTMLImageElement,
@@ -13,7 +14,30 @@ export class TileMap {
     private readonly rows: number,
     private readonly tiles: TileType[][],
     private readonly music: Music,
+    private readonly warps: Warp[] = [],
   ) {}
+
+  public getWarps(): readonly Warp[] {
+    return this.warps;
+  }
+
+  public getWarp(x: number, y: number, width: number, height: number): Warp | undefined {
+    for (const warp of this.warps) {
+      const warpX = warp.column * TileMap.TILE_SIZE;
+      const warpY = warp.row * TileMap.TILE_SIZE;
+
+      if (
+        x < warpX + warp.width &&
+        x + width > warpX &&
+        y < warpY + warp.height &&
+        y + height > warpY
+      ) {
+        return warp;
+      }
+    }
+
+    return undefined;
+  }
 
   public setSpawn(column: number, row: number): void {
     this.spawnX = column;
