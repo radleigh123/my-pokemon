@@ -26,8 +26,8 @@ export class World {
     this.player = player;
     this.npcs = [
       new NPC(
-        96,
-        64,
+        240,
+        224,
         npcSprite,
         new Dialogue("Professor Oak", [
           "This is Biiiiirrrccchhh!!!",
@@ -104,6 +104,7 @@ export class World {
     });
 
     for (const entity of renderQueue) {
+      console.log(entity.constructor.name, entity.getX(), entity.getY());
       renderer.drawSprite(entity.getCurrentFrame(), entity.getX(), entity.getY());
     }
 

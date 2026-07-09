@@ -14,6 +14,7 @@ import { Key } from "../input/Key";
 import { AudioManager } from "@/audio/AudioManager";
 import { Music } from "@/audio/Music";
 import { Sound } from "@/audio/Sound";
+import { Direction } from "@/entities/Direction";
 
 export class Game {
   private readonly loop: GameLoop;
@@ -46,7 +47,7 @@ export class Game {
 
     const npcSprite = await createNpcSprite(this.assets);
 
-    console.log("Sprite", sprite);
+    console.log("NPCSprite", npcSprite.getFrameCount(Direction.Down));
 
     const player = new Player(
       map.getSpawnX() * TileMap.TILE_SIZE,

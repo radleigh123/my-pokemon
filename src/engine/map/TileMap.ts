@@ -1,12 +1,11 @@
 import type { Music } from "@/audio/Music";
 import { TileType } from "./TileType";
-import type { MapObject } from "./MapObject";
 
 export class TileMap {
   public static readonly TILE_SIZE = 16;
 
   private spawnX = 15.5;
-  private spawnY = 17.35;
+  private spawnY = 17.9;
 
   constructor(
     private readonly image: HTMLImageElement,
@@ -15,6 +14,36 @@ export class TileMap {
     private readonly tiles: TileType[][],
     private readonly music: Music,
   ) {}
+
+  public static createFilled(columns: number, rows: number, type: TileType): TileType[][] {
+    return Array.from({ length: rows }, () => Array(columns).fill(type));
+  }
+
+  public setTile(column: number, row: number, type: TileType): void {
+    this.tiles[row]![column] = type;
+  }
+
+  public fillRectangle(
+    column: number,
+    row: number,
+    width: number,
+    height: number,
+    type: TileType,
+  ): void {
+    for (let y = row; y < row + height; y++) {
+      for (let x = column; x < column + width; x++) {
+        if (x < 0 || x >= this.columns || y < 0 || y >= this.rows) {
+          continue;
+        }
+
+        this.tiles[y]![x] = type;
+      }
+    }
+  }
+
+  public clearRectangle(column: number, row: number, width: number, height: number): void {
+    this.fillRectangle(column, row, width, height, TileType.Floor);
+  }
 
   public getMusic(): Music {
     return this.music;
@@ -68,13 +97,15 @@ export class TileMap {
 
     for (let row = top; row <= bottom; row++) {
       for (let column = left; column <= right; column++) {
-        if (row < 0 || row >= this.tiles.length || column < 0 || column >= this.tiles[0]!.length) {
+        if (row < 0 || row >= this.rows) {
           return true;
         }
 
-        const tile = this.tiles[row]![column];
+        if (column < 0 || column >= this.columns) {
+          return true;
+        }
 
-        if (tile === TileType.Wall) {
+        if (this.tiles[row]![column] === TileType.Wall) {
           return true;
         }
       }
