@@ -12,8 +12,13 @@ import { Key } from "../input/Key";
 import { AudioManager } from "@/audio/AudioManager";
 import { MapId, MapManager } from "../map/MapManager";
 import { createDoorSprite } from "@/assets/sprites/DoorSprite";
+import { TileType } from "../map/TileType";
+
+type TransitionPhase = "none" | "fadeOut" | "loading" | "fadeIn";
 
 export class Game {
+  private static readonly TRANSITION_DURATION = 220;
+
   private readonly loop: GameLoop;
   private readonly renderer: Renderer;
   private readonly assets: AssetManager;
@@ -25,13 +30,19 @@ export class Game {
 
   private world!: World;
   private player!: Player;
-  private currentMap = MapId.Lab;
   private loadingMap = false;
+  private playerWasInGrass = false;
+  private transitionPhase: TransitionPhase = "none";
+  private transitionOpacity = 0;
+  private transitionTarget?: {
+    id: MapId;
+    spawnColumn: number;
+    spawnRow: number;
+  };
 
   constructor(canvas: HTMLCanvasElement) {
     this.renderer = new Renderer(canvas);
     this.assets = new AssetManager();
-    // this.maps = new MapManager(this.assets);
     this.loop = new GameLoop(this.update, this.render);
   }
 
@@ -42,17 +53,6 @@ export class Game {
 
     this.maps = new MapManager(this.assets, doorSprite);
 
-    /* this.player = new Player(
-      map.getSpawnX() * TileMap.TILE_SIZE,
-      map.getSpawnY() * TileMap.TILE_SIZE + 65,
-      sprite,
-      this.input,
-    );
-    console.log("loading player...");
-
-    this.world = new World(map, this.player, gameMap.npcs, this.camera);
-
-    this.loop.start(); */
     this.player = new Player(0, 0, sprite, this.input);
 
     await this.loadMap(MapId.Lab);
@@ -63,9 +63,16 @@ export class Game {
   public stop(): void {
     this.audio.stop();
     this.loop.stop();
+    this.input.destroy();
   }
 
   private update = (deltaTime: number): void => {
+    if (this.transitionPhase !== "none") {
+      this.updateTransition(deltaTime);
+      this.input.endFrame();
+      return;
+    }
+
     if (this.input.isJustPressed(Key.A)) {
       if (this.world.interact()) {
         this.audio.button();
@@ -79,15 +86,12 @@ export class Game {
 
     this.world.update(deltaTime);
 
+    this.updateGrassEncounterHook();
+
     const warp = this.world.getPendingWarp();
 
     if (warp) {
-      console.log("Destination:", MapId[warp.destination]);
-      this.loadingMap = true;
-
-      void this.loadMap(warp.destination, warp.spawnColumn, warp.spawnRow).finally(() => {
-        this.loadingMap = false;
-      });
+      this.startMapTransition(warp.destination, warp.spawnColumn, warp.spawnRow);
     }
 
     this.input.endFrame();
@@ -96,6 +100,12 @@ export class Game {
   private render = (): void => {
     this.renderer.clear();
     this.world.render(this.renderer);
+    this.renderer.drawCollision(this.world.getTileMap());
+    this.renderer.drawWarps(this.world.getTileMap());
+
+    if (this.transitionOpacity > 0) {
+      this.renderer.fadeToBlack(this.transitionOpacity);
+    }
   };
 
   public getDialogue() {
@@ -107,22 +117,123 @@ export class Game {
   }
 
   private async loadMap(id: MapId, spawnColumn?: number, spawnRow?: number): Promise<void> {
-    console.log("Loading map:", MapId[id]);
     const gameMap = await this.maps.load(id);
-    console.log(gameMap);
     const map = gameMap.tileMap;
 
     const column = spawnColumn ?? map.getSpawnX();
     const row = spawnRow ?? map.getSpawnY();
 
-    this.player.setPosition(column * TileMap.TILE_SIZE, row * TileMap.TILE_SIZE);
+    const playerX = column * TileMap.TILE_SIZE;
+    const playerY = row * TileMap.TILE_SIZE;
+    const collisionX = playerX + (this.player.getCollisionX() - this.player.getX());
+    const collisionY = playerY + (this.player.getCollisionY() - this.player.getY());
+
+    const nextWorld = new World(
+      map,
+      this.player,
+      gameMap.npcs,
+      gameMap.objects ?? [],
+      gameMap.door,
+      this.camera,
+    );
+
+    if (
+      nextWorld.isBlocked(
+        collisionX,
+        collisionY,
+        this.player.getCollisionWidth(),
+        this.player.getCollisionHeight(),
+      )
+    ) {
+      throw new Error(`Invalid spawn ${column},${row} for map ${MapId[id]}.`);
+    }
 
     await this.audio.play(map.getMusic());
 
-    this.world = new World(map, this.player, gameMap.npcs, gameMap.door, this.camera);
+    this.player.setPosition(playerX, playerY);
+    this.player.resetWarpCooldown();
+
+    this.camera.follow(
+      this.player.getCollisionX() + this.player.getCollisionWidth() / 2,
+      this.player.getCollisionY() + this.player.getCollisionHeight() / 2,
+      map.getPixelWidth(),
+      map.getPixelHeight(),
+    );
+
+    this.world = nextWorld;
 
     gameMap.door?.reset();
 
-    this.currentMap = id;
+    this.playerWasInGrass = this.world.getPlayerTile() === TileType.Grass;
+  }
+
+  private updateGrassEncounterHook(): void {
+    const playerIsInGrass = this.world.getPlayerTile() === TileType.Grass;
+
+    if (playerIsInGrass && !this.playerWasInGrass) {
+      this.onPlayerEnteredGrass();
+    }
+
+    this.playerWasInGrass = playerIsInGrass;
+  }
+
+  private onPlayerEnteredGrass(): void {
+    // Future wild encounter hook.
+  }
+
+  private startMapTransition(id: MapId, spawnColumn: number, spawnRow: number): void {
+    if (this.loadingMap) {
+      return;
+    }
+
+    this.loadingMap = true;
+    this.transitionPhase = "fadeOut";
+    this.transitionOpacity = 0;
+    this.transitionTarget = { id, spawnColumn, spawnRow };
+  }
+
+  private updateTransition(deltaTime: number): void {
+    if (this.transitionPhase === "fadeOut") {
+      this.transitionOpacity += deltaTime / Game.TRANSITION_DURATION;
+
+      if (this.transitionOpacity >= 1) {
+        this.transitionOpacity = 1;
+        this.transitionPhase = "loading";
+        this.loadTransitionTarget();
+      }
+
+      return;
+    }
+
+    if (this.transitionPhase === "fadeIn") {
+      this.transitionOpacity -= deltaTime / Game.TRANSITION_DURATION;
+
+      if (this.transitionOpacity <= 0) {
+        this.transitionOpacity = 0;
+        this.transitionPhase = "none";
+        this.loadingMap = false;
+        this.transitionTarget = undefined;
+      }
+    }
+  }
+
+  private loadTransitionTarget(): void {
+    const target = this.transitionTarget;
+
+    if (!target) {
+      this.transitionPhase = "fadeIn";
+      return;
+    }
+
+    void this.loadMap(target.id, target.spawnColumn, target.spawnRow).then(() => {
+      this.transitionPhase = "fadeIn";
+    }).catch((error: unknown) => {
+      this.transitionOpacity = 0;
+      this.transitionPhase = "none";
+      this.loadingMap = false;
+      this.transitionTarget = undefined;
+
+      throw error;
+    });
   }
 }

@@ -1,6 +1,7 @@
 import type { Door } from "@/entities/Door";
 import { TileMap } from "../map/TileMap";
-import { TileType } from "../map/TileType";
+import type { MapObject } from "../map/MapObject";
+import { Direction } from "@/entities/Direction";
 
 export class Renderer {
   public static readonly WIDTH = 240;
@@ -68,6 +69,14 @@ export class Renderer {
     this.context.fillRect(0, 0, Renderer.WIDTH, Renderer.HEIGHT);
   }
 
+  public fadeToBlack(opacity: number): void {
+    this.context.save();
+    this.context.globalAlpha = Math.max(0, Math.min(opacity, 1));
+    this.context.fillStyle = "black";
+    this.context.fillRect(0, 0, Renderer.WIDTH, Renderer.HEIGHT);
+    this.context.restore();
+  }
+
   public setBackground(color: string): void {
     this.backgroundColor = color;
   }
@@ -90,18 +99,30 @@ export class Renderer {
   }
 
   public drawCollision(map: TileMap): void {
+    this.context.save();
+    this.context.lineWidth = 1;
+
     for (let row = 0; row < map.getRows(); row++) {
       for (let col = 0; col < map.getColumns(); col++) {
-        if (map.getTile(col * TileMap.TILE_SIZE, row * TileMap.TILE_SIZE) === TileType.Wall) {
-          this.context.strokeStyle = "red";
+        const x = col * TileMap.TILE_SIZE;
+        const y = row * TileMap.TILE_SIZE;
+        const tile = map.getTile(x, y);
 
-          this.context.strokeRect(col * 16 - this.cameraX, row * 16 - this.cameraY, 16, 16);
-        }
+        this.context.strokeStyle = map.isBlockingTile(tile) ? "red" : "rgba(255, 255, 255, 0.25)";
+        this.context.strokeRect(
+          x - this.cameraX,
+          y - this.cameraY,
+          TileMap.TILE_SIZE,
+          TileMap.TILE_SIZE,
+        );
       }
     }
+
+    this.context.restore();
   }
 
   public drawWarps(map: TileMap): void {
+    this.context.save();
     this.context.strokeStyle = "cyan";
     this.context.lineWidth = 2;
 
@@ -113,17 +134,23 @@ export class Renderer {
         warp.height,
       );
     }
-  }
 
-  public drawMapCentered(image: HTMLImageElement): void {
-    const x = (this.canvas.width - image.width) / 2;
-
-    const y = (this.canvas.height - image.height) / 2;
-
-    this.context.drawImage(image, Math.round(x - this.cameraX), Math.round(y - this.cameraY));
+    this.context.restore();
   }
 
   public drawDoor(door: Door): void {
     this.drawSprite(door.renderFrame(), door.getX(), door.getY());
+  }
+
+  public drawObject(object: MapObject): void {
+    if (!object.sprite) {
+      return;
+    }
+
+    this.context.drawImage(
+      object.sprite.getFrame(Direction.Down, 0),
+      Math.round(object.x - this.cameraX),
+      Math.round(object.y - this.cameraY),
+    );
   }
 }

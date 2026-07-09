@@ -17,8 +17,6 @@ let uiLoop = 0;
 function updateUI() {
   const dialogue = game.getDialogue();
 
-  console.log("DIALOGUEACTIVE", dialogue.isActive());
-
   visible.value = dialogue.isActive();
   speaker.value = dialogue.getSpeaker();
   text.value = dialogue.getCurrentLine();

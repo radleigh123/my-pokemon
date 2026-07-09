@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onBeforeMount, onMounted, ref } from 'vue';
+import { onBeforeUnmount, onMounted, ref } from 'vue';
 import GbaOverlay from './components/GbaOverlay.vue';
 import IntroVideo from './components/IntroVideo.vue';
 // import HomeScreen from './components/HomeScreen.vue';
@@ -13,7 +13,7 @@ onMounted(() => {
   window.addEventListener("keyup", input.keyUp)
 })
 
-onBeforeMount(() => {
+onBeforeUnmount(() => {
   window.removeEventListener("keydown", input.keyDown)
   window.removeEventListener("keyup", input.keyUp)
 })

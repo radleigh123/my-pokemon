@@ -4,4 +4,6 @@ export enum TileType {
   Grass,
   Water,
   Door,
+  Warp,
+  Object,
 }

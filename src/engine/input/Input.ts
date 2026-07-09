@@ -15,4 +15,8 @@ export class Input {
   public endFrame(): void {
     this.keyboard.endFrame();
   }
+
+  public destroy(): void {
+    this.keyboard.destroy();
+  }
 }

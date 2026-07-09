@@ -5,8 +5,6 @@ export class DialogueManager {
   private lineIndex = 0;
 
   public start(dialogue: Dialogue): void {
-    console.log("START DIALOGUE", dialogue);
-
     this.dialogue = dialogue;
     this.lineIndex = 0;
   }

@@ -5,10 +5,12 @@ import type { GameMap } from "./GameMap";
 
 import { createLab } from "@/maps/Lab";
 import { createLittleroot } from "@/maps/Littleroot";
+import { createRoute101 } from "@/maps/Route101";
 
 export enum MapId {
   Lab,
   Littleroot,
+  Route101,
 }
 
 export class MapManager {
@@ -24,6 +26,9 @@ export class MapManager {
 
       case MapId.Littleroot:
         return await createLittleroot(this.assets, this.doorSprite);
+
+      case MapId.Route101:
+        return await createRoute101(this.assets);
 
       default:
         throw new Error(`Unknown map ${id}`);

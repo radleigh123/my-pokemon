@@ -12,9 +12,6 @@ export class Player extends Entity {
   private readonly idleAnimation = new Animation([0], 150);
   private readonly walkAnimation = new Animation([0, 1, 0, 2], 150);
 
-  private mapWidth = Number.MAX_SAFE_INTEGER;
-  private mapHeight = Number.MAX_SAFE_INTEGER;
-
   private nextX = 0;
   private nextY = 0;
 
@@ -72,7 +69,6 @@ export class Player extends Entity {
 
   public resetWarpCooldown(): void {
     this.warpCooldown = 1500;
-    console.log("warp", this.warpCooldown);
   }
 
   public override getCurrentFrame(): HTMLImageElement {
@@ -91,16 +87,18 @@ export class Player extends Entity {
     );
   }
 
-  public setMapSize(width: number, height: number): void {
-    this.mapWidth = width;
-    this.mapHeight = height;
-  }
-
   public getNextPosition(): { x: number; y: number } {
     return {
       x: this.nextX,
       y: this.nextY,
     };
+  }
+
+  public override setPosition(x: number, y: number): void {
+    super.setPosition(x, y);
+
+    this.nextX = x;
+    this.nextY = y;
   }
 
   public getFacingTile(): { x: number; y: number } {

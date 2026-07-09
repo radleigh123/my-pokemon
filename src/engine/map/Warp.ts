@@ -1,4 +1,3 @@
-import type { Door } from "@/entities/Door";
 import type { MapId } from "./MapManager";
 
 export interface Warp {
@@ -13,5 +12,5 @@ export interface Warp {
   readonly spawnColumn: number;
   readonly spawnRow: number;
 
-  door?: Door;
+  readonly requiresDoorAnimation?: boolean;
 }

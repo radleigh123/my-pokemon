@@ -30,15 +30,16 @@ export class AudioManager {
   }
 
   public async play(music: Music): Promise<void> {
-    if (this.current === music) {
+    if (this.current === music && !this.player.paused) {
       return;
     }
 
-    this.current = music;
-
-    this.player.pause();
-    this.player.src = this.tracks.get(music)!;
-    this.player.currentTime = 0;
+    if (this.current !== music) {
+      this.player.pause();
+      this.player.src = this.tracks.get(music)!;
+      this.player.currentTime = 0;
+      this.current = music;
+    }
 
     try {
       await this.player.play();

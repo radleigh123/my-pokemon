@@ -1,14 +1,16 @@
 <script setup lang="ts">
-import { onBeforeMount, onMounted, ref } from 'vue';
+import { onBeforeUnmount, onMounted, ref } from 'vue';
 
 onMounted(() => {
   window.addEventListener("click", unmute, { once: true })
   window.addEventListener("keydown", unmute, { once: true })
+  window.addEventListener("keydown", onKeydown)
 })
 
-onBeforeMount(() => {
-  window.addEventListener("click", unmute)
-  window.addEventListener("keydown", unmute)
+onBeforeUnmount(() => {
+  window.removeEventListener("click", unmute)
+  window.removeEventListener("keydown", unmute)
+  window.removeEventListener("keydown", onKeydown)
 })
 
 const emit = defineEmits<{
@@ -18,12 +20,6 @@ const emit = defineEmits<{
 const showUnmutePrompt = ref(true)
 
 const video = ref<HTMLVideoElement>()
-
-function onTimeUpdate() {
-  if (!video.value) {
-    return
-  }
-}
 
 function onKeydown(e: KeyboardEvent) {
   if (e.code === "Enter") {
@@ -38,13 +34,11 @@ function unmute() {
   video.value.volume = 1
   showUnmutePrompt.value = false
 }
-
-window.addEventListener("keydown", onKeydown)
 </script>
 
 <template>
   <div class="intro-container">
-    <video class="intro-video" ref="video" loop autoplay muted @timeupdate="onTimeUpdate">
+    <video class="intro-video" ref="video" loop autoplay muted>
       <source src="@/assets/intro.mp4" type="video/mp4">
     </video>
 

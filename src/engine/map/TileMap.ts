@@ -7,15 +7,21 @@ export class TileMap {
 
   private spawnX = 16;
   private spawnY = 21.2;
+  private readonly columns: number;
+  private readonly rows: number;
 
   constructor(
     private readonly image: HTMLImageElement,
-    private readonly columns: number,
-    private readonly rows: number,
     private readonly tiles: TileType[][],
     private readonly music: Music,
     private readonly warps: Warp[] = [],
-  ) {}
+  ) {
+    this.rows = tiles.length;
+    this.columns = tiles[0]?.length ?? 0;
+
+    this.validateTilesCoverImage();
+    this.validateWarps();
+  }
 
   public getWarps(): readonly Warp[] {
     return this.warps;
@@ -48,7 +54,52 @@ export class TileMap {
     return Array.from({ length: rows }, () => Array(columns).fill(type));
   }
 
+  public static setTileInGrid(
+    grid: TileType[][],
+    column: number,
+    row: number,
+    type: TileType,
+  ): void {
+    if (row < 0 || row >= grid.length || column < 0 || column >= grid[row]!.length) {
+      return;
+    }
+
+    grid[row]![column] = type;
+  }
+
+  public static fillTiles(
+    grid: TileType[][],
+    column: number,
+    row: number,
+    width: number,
+    height: number,
+    type: TileType,
+  ): void {
+    for (let y = row; y < row + height; y++) {
+      for (let x = column; x < column + width; x++) {
+        TileMap.setTileInGrid(grid, x, y, type);
+      }
+    }
+  }
+
+  public static stampTiles(
+    grid: TileType[][],
+    layout: readonly (readonly TileType[])[],
+    column: number,
+    row: number,
+  ): void {
+    for (let y = 0; y < layout.length; y++) {
+      for (let x = 0; x < layout[y]!.length; x++) {
+        TileMap.setTileInGrid(grid, column + x, row + y, layout[y]![x]!);
+      }
+    }
+  }
+
   public setTile(column: number, row: number, type: TileType): void {
+    if (row < 0 || row >= this.rows || column < 0 || column >= this.columns) {
+      return;
+    }
+
     this.tiles[row]![column] = type;
   }
 
@@ -61,11 +112,7 @@ export class TileMap {
   ): void {
     for (let y = row; y < row + height; y++) {
       for (let x = column; x < column + width; x++) {
-        if (x < 0 || x >= this.columns || y < 0 || y >= this.rows) {
-          continue;
-        }
-
-        this.tiles[y]![x] = type;
+        this.setTile(x, y, type);
       }
     }
   }
@@ -99,11 +146,11 @@ export class TileMap {
   }
 
   public getPixelWidth(): number {
-    return this.columns * TileMap.TILE_SIZE;
+    return this.image.width;
   }
 
   public getPixelHeight(): number {
-    return this.rows * TileMap.TILE_SIZE;
+    return this.image.height;
   }
 
   public getTile(pixelX: number, pixelY: number): TileType {
@@ -117,7 +164,15 @@ export class TileMap {
     return this.tiles[row]![column]!;
   }
 
+  public isBlockingTile(tile: TileType): boolean {
+    return tile === TileType.Wall || tile === TileType.Water || tile === TileType.Object;
+  }
+
   public isBlocked(x: number, y: number, width: number, height: number): boolean {
+    if (x < 0 || y < 0 || x + width > this.image.width || y + height > this.image.height) {
+      return true;
+    }
+
     const left = Math.floor(x / TileMap.TILE_SIZE);
     const right = Math.floor((x + width - 1) / TileMap.TILE_SIZE);
 
@@ -134,12 +189,64 @@ export class TileMap {
           return true;
         }
 
-        if (this.tiles[row]![column] === TileType.Wall) {
+        if (this.isBlockingTile(this.tiles[row]![column]!)) {
           return true;
         }
       }
     }
 
     return false;
+  }
+
+  private validateTilesCoverImage(): void {
+    if (this.tiles.length === 0 || this.tiles[0]!.length === 0) {
+      throw new Error("TileMap requires a non-empty collision grid.");
+    }
+
+    const columns = this.tiles[0]!.length;
+
+    for (const row of this.tiles) {
+      if (row.length !== columns) {
+        throw new Error("TileMap collision grid rows must all have the same width.");
+      }
+    }
+
+    const requiredColumns = Math.ceil(this.image.width / TileMap.TILE_SIZE);
+    const requiredRows = Math.ceil(this.image.height / TileMap.TILE_SIZE);
+
+    if (columns < requiredColumns || this.tiles.length < requiredRows) {
+      throw new Error(
+        `TileMap collision grid ${columns}x${this.tiles.length} does not cover image ` +
+          `${this.image.width}x${this.image.height}.`,
+      );
+    }
+  }
+
+  private validateWarps(): void {
+    for (const warp of this.warps) {
+      const x = warp.column * TileMap.TILE_SIZE;
+      const y = warp.row * TileMap.TILE_SIZE;
+
+      if (
+        x < 0 ||
+        y < 0 ||
+        warp.width <= 0 ||
+        warp.height <= 0 ||
+        x + warp.width > this.image.width ||
+        y + warp.height > this.image.height
+      ) {
+        throw new Error(
+          `Warp at ${warp.column},${warp.row} (${warp.width}x${warp.height}) ` +
+          `does not fit inside image ${this.image.width}x${this.image.height}.`,
+        );
+      }
+
+      if (this.isBlocked(x, y, warp.width, warp.height)) {
+        throw new Error(
+          `Warp at ${warp.column},${warp.row} (${warp.width}x${warp.height}) ` +
+            "overlaps blocked collision tiles.",
+        );
+      }
+    }
   }
 }
