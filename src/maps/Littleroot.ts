@@ -9,8 +9,10 @@ import type { GameMap } from "@/engine/map/GameMap";
 import type { Warp } from "@/engine/map/Warp";
 import { MapId } from "@/engine/map/MapManager";
 import { createCollisionGrid } from "./data/LittlerootCollision";
+import type { Sprite } from "@/engine/animation/Sprite";
+import { Door } from "@/entities/Door";
 
-export async function createLittleroot(assets: AssetManager): Promise<GameMap> {
+export async function createLittleroot(assets: AssetManager, doorSprite: Sprite): Promise<GameMap> {
   const image = await assets.loadImage(littleroot);
 
   const columns = image.width / TileMap.TILE_SIZE;
@@ -38,5 +40,6 @@ export async function createLittleroot(assets: AssetManager): Promise<GameMap> {
   return {
     tileMap: map,
     npcs: [],
+    door: new Door(209, 288.4, doorSprite),
   };
 }

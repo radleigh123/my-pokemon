@@ -8,22 +8,29 @@ import { Entity } from "@/entities/Entity";
 import { DialogueManager } from "@/dialogue/DialogueManager";
 import { NPC } from "@/entities/NPC";
 import { opposite } from "@/entities/Direction";
+import type { Warp } from "../map/Warp";
+import type { Door } from "@/entities/Door";
 
 export class World {
   private readonly entities: Entity[];
   private readonly npcs: NPC[] = [];
   private readonly player: Player;
   private readonly dialogue = new DialogueManager();
+  private readonly door?: Door;
+
+  private pendingWarp?: Warp;
 
   constructor(
     private readonly map: TileMap,
     player: Player,
     npcs: NPC[],
+    door: Door | undefined,
     private readonly camera: Camera,
   ) {
     this.player = player;
     this.npcs = npcs;
     this.entities = [player, ...this.npcs];
+    this.door = door;
   }
 
   public update(deltaTime: number): void {
@@ -34,6 +41,8 @@ export class World {
     for (const entity of this.entities) {
       entity.update(deltaTime);
     }
+
+    this.door?.update(deltaTime);
 
     const next = this.player.getNextPosition();
 
@@ -75,6 +84,10 @@ export class World {
     renderer.setCamera(this.camera.getX(), this.camera.getY());
 
     renderer.drawMap(this.map);
+
+    if (this.door) {
+      renderer.drawDoor(this.door);
+    }
 
     const renderQueue = [...this.entities];
 
@@ -128,7 +141,18 @@ export class World {
     return this.dialogue;
   }
 
-  public getPendingWarp() {
+  public getPendingWarp(): Warp | null {
+    if (this.pendingWarp) {
+      if (!this.door?.isFinished()) {
+        return null;
+      }
+
+      const warp = this.pendingWarp;
+      this.pendingWarp = undefined;
+
+      return warp;
+    }
+
     if (!this.player.canWarp()) {
       return null;
     }
@@ -140,11 +164,19 @@ export class World {
       this.player.getCollisionHeight(),
     );
 
-    if (warp) {
-      this.player.resetWarpCooldown(); // <-- missing
-      console.log("Warp detected", warp);
+    if (!warp) {
+      return null;
     }
 
-    return warp;
+    // Interior maps
+    if (!this.door) {
+      return warp;
+    }
+
+    // Exterior maps
+    this.pendingWarp = warp;
+    this.door.open();
+
+    return null;
   }
 }

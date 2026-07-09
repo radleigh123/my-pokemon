@@ -1,3 +1,4 @@
+import type { Door } from "@/entities/Door";
 import { TileMap } from "../map/TileMap";
 import { TileType } from "../map/TileType";
 
@@ -120,5 +121,9 @@ export class Renderer {
     const y = (this.canvas.height - image.height) / 2;
 
     this.context.drawImage(image, Math.round(x - this.cameraX), Math.round(y - this.cameraY));
+  }
+
+  public drawDoor(door: Door): void {
+    this.drawSprite(door.renderFrame(), door.getX(), door.getY());
   }
 }

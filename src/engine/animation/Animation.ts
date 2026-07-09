@@ -32,6 +32,6 @@ export class Animation {
   }
 
   public isFinished(): boolean {
-    return !this.looping && this.currentIndex === this.currentIndex - 1;
+    return !this.looping && this.currentIndex === this.sequence.length - 1;
   }
 }

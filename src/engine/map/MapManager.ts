@@ -1,9 +1,10 @@
+import type { Sprite } from "../animation/Sprite";
 import { AssetManager } from "../assets/AssetManager";
 
 import type { GameMap } from "./GameMap";
 
 import { createLab } from "@/maps/Lab";
-import { createLittleroot } from "@/maps/LittleRoot";
+import { createLittleroot } from "@/maps/Littleroot";
 
 export enum MapId {
   Lab,
@@ -11,7 +12,10 @@ export enum MapId {
 }
 
 export class MapManager {
-  constructor(private readonly assets: AssetManager) {}
+  constructor(
+    private readonly assets: AssetManager,
+    private readonly doorSprite: Sprite,
+  ) {}
 
   public async load(id: MapId): Promise<GameMap> {
     switch (id) {
@@ -19,7 +23,7 @@ export class MapManager {
         return await createLab(this.assets);
 
       case MapId.Littleroot:
-        return await createLittleroot(this.assets);
+        return await createLittleroot(this.assets, this.doorSprite);
 
       default:
         throw new Error(`Unknown map ${id}`);
