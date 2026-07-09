@@ -15,6 +15,11 @@ export class TileMap {
     private readonly music: Music,
   ) {}
 
+  public setSpawn(column: number, row: number): void {
+    this.spawnX = column;
+    this.spawnY = row;
+  }
+
   public static createFilled(columns: number, rows: number, type: TileType): TileType[][] {
     return Array.from({ length: rows }, () => Array(columns).fill(type));
   }

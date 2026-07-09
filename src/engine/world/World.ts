@@ -6,9 +6,7 @@ import { TileMap } from "../map/TileMap";
 import { Player } from "@/entities/Player";
 import { Entity } from "@/entities/Entity";
 import { DialogueManager } from "@/dialogue/DialogueManager";
-import { Sprite } from "../animation/Sprite";
 import { NPC } from "@/entities/NPC";
-import { Dialogue } from "@/dialogue/Dialogue";
 import { opposite } from "@/entities/Direction";
 
 export class World {
@@ -20,26 +18,12 @@ export class World {
   constructor(
     private readonly map: TileMap,
     player: Player,
-    npcSprite: Sprite,
+    npcs: NPC[],
     private readonly camera: Camera,
   ) {
     this.player = player;
-    this.npcs = [
-      new NPC(
-        240,
-        224,
-        npcSprite,
-        new Dialogue("Professor Oak", [
-          "This is Biiiiirrrccchhh!!!",
-          "Choose my Poke-",
-          "...",
-          "I mean choose your starter pokemon.",
-        ]),
-      ),
-    ];
+    this.npcs = npcs;
     this.entities = [player, ...this.npcs];
-
-    // player.setMapSize(map.getWidth(), map.getHeight());
   }
 
   public update(deltaTime: number): void {
@@ -104,7 +88,6 @@ export class World {
     });
 
     for (const entity of renderQueue) {
-      console.log(entity.constructor.name, entity.getX(), entity.getY());
       renderer.drawSprite(entity.getCurrentFrame(), entity.getX(), entity.getY());
     }
 

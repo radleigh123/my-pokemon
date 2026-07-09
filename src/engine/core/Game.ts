@@ -6,15 +6,11 @@ import { Keyboard } from "../input/Keyboard";
 import { Input } from "../input/Input";
 import { Player } from "@/entities/Player";
 import { Camera } from "./Camera";
-import { createLab } from "@/maps/Lab";
 import { World } from "../world/World";
 import { TileMap } from "../map/TileMap";
-import { createNpcSprite } from "@/assets/sprites/NpcSprite";
 import { Key } from "../input/Key";
 import { AudioManager } from "@/audio/AudioManager";
-import { Music } from "@/audio/Music";
-import { Sound } from "@/audio/Sound";
-import { Direction } from "@/entities/Direction";
+import { MapId, MapManager } from "../map/MapManager";
 
 export class Game {
   private readonly loop: GameLoop;
@@ -24,6 +20,7 @@ export class Game {
   private readonly input = new Input(this.keyboard);
   private readonly camera = new Camera();
   private readonly audio = new AudioManager();
+  private readonly maps;
 
   private world!: World;
 
@@ -32,22 +29,20 @@ export class Game {
   constructor(canvas: HTMLCanvasElement) {
     this.renderer = new Renderer(canvas);
     this.assets = new AssetManager();
-
+    this.maps = new MapManager(this.assets);
     this.loop = new GameLoop(this.update, this.render);
   }
 
   public async start(): Promise<void> {
     console.log("loading map...");
 
-    const map = await createLab(this.assets);
+    const gameMap = await this.maps.load(MapId.Lab);
+
+    const map = gameMap.tileMap;
 
     await this.audio.play(map.getMusic());
 
     const sprite = await createPlayerSprite(this.assets);
-
-    const npcSprite = await createNpcSprite(this.assets);
-
-    console.log("NPCSprite", npcSprite.getFrameCount(Direction.Down));
 
     const player = new Player(
       map.getSpawnX() * TileMap.TILE_SIZE,
@@ -57,7 +52,7 @@ export class Game {
     );
     console.log("loading player...");
 
-    this.world = new World(map, player, npcSprite, this.camera);
+    this.world = new World(map, player, gameMap.npcs, this.camera);
 
     this.loop.start();
   }
