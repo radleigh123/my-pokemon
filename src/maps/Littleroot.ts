@@ -3,10 +3,12 @@ import { TileMap } from "@/engine/map/TileMap";
 import { TileType } from "@/engine/map/TileType";
 import { Music } from "@/audio/Music";
 
-import littleroot from "@/assets/maps/littleroot-512x480px.png";
+// import littleroot from "@/assets/maps/littleroot-512x480px.png";
+import littleroot from "@/assets/maps/littleroot-512x480px copy.png";
 import type { GameMap } from "@/engine/map/GameMap";
 import type { Warp } from "@/engine/map/Warp";
 import { MapId } from "@/engine/map/MapManager";
+import { createCollisionGrid } from "./data/LittlerootCollision";
 
 export async function createLittleroot(assets: AssetManager): Promise<GameMap> {
   const image = await assets.loadImage(littleroot);
@@ -16,11 +18,11 @@ export async function createLittleroot(assets: AssetManager): Promise<GameMap> {
 
   const warps: Warp[] = [
     {
-      column: 16,
-      row: 25,
+      column: 13,
+      row: 19,
 
       width: 16,
-      height: 16,
+      height: 5,
 
       destination: MapId.Lab,
 
@@ -29,13 +31,9 @@ export async function createLittleroot(assets: AssetManager): Promise<GameMap> {
     },
   ];
 
-  const tiles = TileMap.createFilled(columns, rows, TileType.Wall);
+  const tiles = createCollisionGrid();
 
   const map = new TileMap(image, columns, rows, tiles, Music.LittlerootTown, warps);
-
-  map.clearRectangle(2, 2, 28, 26);
-
-  map.setSpawn(16, 23);
 
   return {
     tileMap: map,

@@ -31,15 +31,15 @@ export async function createLab(assets: AssetManager): Promise<GameMap> {
   const warps: Warp[] = [
     {
       column: 15,
-      row: 22,
+      row: 22.6,
 
       width: 16,
-      height: 16,
+      height: 5,
 
       destination: MapId.Littleroot,
 
-      spawnColumn: 16,
-      spawnRow: 24,
+      spawnColumn: 13,
+      spawnRow: 20,
     },
   ];
 

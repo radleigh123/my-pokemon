@@ -18,6 +18,8 @@ export class Player extends Entity {
   private nextX = 0;
   private nextY = 0;
 
+  private warpCooldown = 0;
+
   constructor(
     x: number,
     y: number,
@@ -30,6 +32,10 @@ export class Player extends Entity {
   }
 
   public update(deltaTime: number): void {
+    if (this.warpCooldown > 0) {
+      this.warpCooldown -= deltaTime;
+    }
+
     let moving = false;
 
     this.nextX = this.x;
@@ -58,6 +64,15 @@ export class Player extends Entity {
     } else {
       this.walkAnimation.reset();
     }
+  }
+
+  public canWarp(): boolean {
+    return this.warpCooldown <= 0;
+  }
+
+  public resetWarpCooldown(): void {
+    this.warpCooldown = 1500;
+    console.log("warp", this.warpCooldown);
   }
 
   public override getCurrentFrame(): HTMLImageElement {

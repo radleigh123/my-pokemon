@@ -18,13 +18,8 @@ export class MapManager {
       case MapId.Lab:
         return await createLab(this.assets);
 
-      // case MapId.Littleroot:
-      //   return await createLittleroot(this.assets);
-      case MapId.Littleroot: {
-        const map = await createLittleroot(this.assets);
-        console.log("MapManager:", map);
-        return map;
-      }
+      case MapId.Littleroot:
+        return await createLittleroot(this.assets);
 
       default:
         throw new Error(`Unknown map ${id}`);

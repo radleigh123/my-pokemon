@@ -6,7 +6,7 @@ export class TileMap {
   public static readonly TILE_SIZE = 16;
 
   private spawnX = 16;
-  private spawnY = 21.9;
+  private spawnY = 21.2;
 
   constructor(
     private readonly image: HTMLImageElement,
