@@ -17,8 +17,8 @@ export async function createLittleroot(assets: AssetManager, doorSprite: Sprite)
 
   const warps: Warp[] = [
     {
-      column: 13,
-      row: 18,
+      column: 9,
+      row: 19,
 
       width: 16,
       height: 21,
@@ -91,6 +91,6 @@ export async function createLittleroot(assets: AssetManager, doorSprite: Sprite)
     tileMap: map,
     npcs: [],
     objects,
-    door: new Door(209, 288.4, doorSprite),
+    door: new Door(143, 263, doorSprite),
   };
 }
