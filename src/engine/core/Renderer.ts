@@ -104,17 +104,19 @@ export class Renderer {
 
     for (let row = 0; row < map.getRows(); row++) {
       for (let col = 0; col < map.getColumns(); col++) {
-        const x = col * TileMap.TILE_SIZE;
-        const y = row * TileMap.TILE_SIZE;
+        const x = map.getTilePixelX(col);
+        const y = map.getTilePixelY(row);
+        const width = map.getCollisionTileWidth(col);
+        const height = map.getCollisionTileHeight(row);
+
+        if (width <= 0 || height <= 0) {
+          continue;
+        }
+
         const tile = map.getTile(x, y);
 
         this.context.strokeStyle = map.isBlockingTile(tile) ? "red" : "rgba(255, 255, 255, 0.25)";
-        this.context.strokeRect(
-          x - this.cameraX,
-          y - this.cameraY,
-          TileMap.TILE_SIZE,
-          TileMap.TILE_SIZE,
-        );
+        this.context.strokeRect(x - this.cameraX, y - this.cameraY, width, height);
       }
     }
 
@@ -128,8 +130,8 @@ export class Renderer {
 
     for (const warp of map.getWarps()) {
       this.context.strokeRect(
-        warp.column * TileMap.TILE_SIZE - this.cameraX,
-        warp.row * TileMap.TILE_SIZE - this.cameraY,
+        map.getTilePixelX(warp.column) - this.cameraX,
+        map.getTilePixelY(warp.row) - this.cameraY,
         warp.width,
         warp.height,
       );

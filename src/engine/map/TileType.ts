@@ -6,4 +6,5 @@ export enum TileType {
   Door,
   Warp,
   Object,
+  Cliff,
 }

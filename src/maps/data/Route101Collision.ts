@@ -5,23 +5,36 @@ const W = TileType.Wall;
 const F = TileType.Floor;
 const G = TileType.Grass;
 const P = TileType.Warp;
+const O = TileType.Object;
+const C = TileType.Cliff;
+
+const SMALL: TileType[][] = [
+  [W, W, W, W, W, W, W, W, W, W, F, F, F, F, W, W, W, W, W, W, W, W, W, W],
+  [W, W, W, W, W, W, W, W, W, W, F, F, F, F, W, W, W, W, W, W, W, W, W, W],
+  [W, W, W, W, G, G, G, F, F, F, F, F, F, F, F, G, G, G, W, W, W, W, W, W],
+  [W, W, W, W, G, G, G, G, F, F, F, F, F, F, G, G, G, G, W, W, W, W, W, W],
+  [W, W, G, G, G, G, G, G, F, F, F, F, F, F, G, G, G, G, G, G, W, W, W, W],
+  [W, W, G, G, G, G, G, F, F, F, F, F, F, F, G, G, G, G, G, G, W, W, W, W],
+  [W, W, W, W, G, G, F, F, F, C, C, C, C, W, W, G, G, G, G, F, F, F, W, W],
+  [W, W, W, W, C, C, C, C, C, F, F, F, F, W, W, W, W, F, F, F, F, F, W, W],
+  [W, W, W, W, F, F, F, F, F, F, F, F, F, W, W, W, W, F, F, F, F, F, W, W],
+  [W, W, W, W, W, W, F, O, F, F, F, F, F, W, W, G, G, F, F, F, F, F, W, W],
+  [W, W, W, W, W, W, F, F, F, F, F, F, F, G, G, G, G, G, F, F, F, F, W, W],
+  [W, W, W, W, W, W, F, F, F, F, F, F, F, G, G, G, G, G, G, F, F, F, W, W],
+  [W, W, W, W, W, W, F, F, F, F, F, F, F, G, G, G, G, G, G, F, F, F, W, W],
+  [W, W, W, W, G, G, F, F, F, F, C, C, C, C, G, G, G, G, G, F, F, F, W, W],
+  [W, W, G, G, G, G, G, F, F, F, F, F, F, F, W, W, G, G, F, F, W, W, W, W],
+  [W, W, G, G, G, G, G, G, F, F, F, F, F, F, W, W, G, G, F, F, W, W, W, W],
+  [W, W, W, W, G, G, G, G, F, F, F, F, F, F, W, W, W, W, W, W, W, W, W, W],
+  [W, W, W, W, G, G, G, F, F, F, F, F, F, F, W, W, W, W, W, W, W, W, W, W],
+  [W, W, W, W, W, W, W, W, W, W, W, W, F, F, W, W, W, W, W, W, W, W, W, W],
+  [W, W, W, W, W, W, W, W, W, W, W, W, P, P, W, W, W, W, W, W, W, W, W, W],
+];
 
 export function createCollisionGrid(): TileType[][] {
-  const grid = TileMap.createFilled(24, 20, W);
+  const grid = TileMap.createFilled(SMALL[0]!.length, SMALL.length, W);
 
-  TileMap.fillTiles(grid, 10, 1, 4, 18, F);
-  TileMap.fillTiles(grid, 9, 5, 6, 4, F);
-  TileMap.fillTiles(grid, 8, 12, 8, 4, F);
-
-  TileMap.fillTiles(grid, 2, 3, 5, 4, G);
-  TileMap.fillTiles(grid, 17, 3, 5, 4, G);
-  TileMap.fillTiles(grid, 2, 10, 5, 5, G);
-  TileMap.fillTiles(grid, 17, 10, 5, 5, G);
-  TileMap.fillTiles(grid, 2, 16, 6, 3, G);
-  TileMap.fillTiles(grid, 16, 16, 6, 3, G);
-
-  TileMap.fillTiles(grid, 10, 0, 4, 1, P);
-  TileMap.fillTiles(grid, 10, 19, 4, 1, P);
+  TileMap.stampTiles(grid, SMALL, 0, 0);
 
   return grid;
 }

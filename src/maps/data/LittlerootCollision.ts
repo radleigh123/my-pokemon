@@ -8,38 +8,36 @@ const O = TileType.Object;
 const D = TileType.Door;
 const P = TileType.Warp;
 
+const SMALL: TileType[][] = [
+  [W, W, W, W, W, W, W, W, W, W, P, P, P, P, W, W, W, W, W, W, W, W, W, W],
+  [W, W, W, W, W, W, W, W, W, W, F, F, F, F, W, W, W, W, W, W, W, W, W, W],
+  [W, W, W, W, W, W, W, W, W, W, F, F, F, F, W, W, W, W, W, W, W, W, W, W],
+  [W, W, W, W, G, G, G, G, G, G, F, F, F, F, G, G, G, G, G, G, G, G, W, W],
+  [W, W, W, W, G, G, G, G, G, G, F, F, F, F, G, G, G, G, G, G, G, G, W, W],
+  [W, W, W, W, O, O, O, O, O, O, F, F, F, F, G, O, O, O, O, O, O, G, W, W],
+  [W, W, G, G, O, O, O, O, O, O, F, F, F, F, G, O, O, O, O, O, O, G, G, W],
+  [W, W, G, G, O, O, O, O, O, O, F, F, F, F, G, O, O, O, O, O, O, G, G, W],
+  [W, W, G, G, O, O, O, O, O, O, F, F, F, F, O, O, O, O, O, O, O, G, G, W],
+  [W, W, G, G, O, O, O, O, O, O, F, F, F, F, G, O, O, O, O, O, O, G, G, W],
+  [W, W, G, G, F, F, F, F, F, F, F, F, F, F, F, F, F, F, F, F, F, F, G, W],
+  [W, W, G, G, F, F, F, F, F, F, F, F, F, F, F, F, F, F, F, F, F, F, G, W],
+  [W, W, W, G, G, O, O, O, O, O, O, O, O, O, F, F, F, F, G, G, G, G, G, W],
+  [W, W, W, G, G, O, O, O, O, O, O, O, O, O, F, F, F, O, G, G, G, G, G, W],
+  [W, W, W, G, G, O, O, O, O, O, O, O, O, O, F, F, F, F, G, G, G, G, G, W],
+  [W, W, W, G, G, O, O, O, O, O, O, O, O, O, F, F, F, F, G, G, G, G, G, W],
+  [W, W, W, G, G, O, O, O, O, O, O, O, O, O, F, F, F, F, G, G, G, G, G, W],
+  [W, W, W, G, G, O, O, O, O, O, O, O, O, O, F, F, F, F, G, G, G, G, G, W],
+  [W, W, W, G, G, G, G, G, O, G, G, F, F, D, F, F, F, F, G, G, G, G, G, W],
+  [W, W, W, W, W, G, G, G, G, G, G, F, F, F, F, F, F, F, G, G, W, W, W, W],
+  [W, W, W, W, W, G, G, G, G, G, G, F, F, F, F, F, F, G, G, G, W, W, W, W],
+  [W, W, W, W, W, G, G, G, G, G, G, G, G, G, G, G, G, G, G, G, W, W, W, W],
+  [W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W],
+];
+
 export function createCollisionGrid(): TileType[][] {
-  const grid = TileMap.createFilled(24, 23, W);
+  const grid = TileMap.createFilled(SMALL[0]!.length, SMALL.length, W);
 
-  // Walkable lawn inside the tree border.
-  TileMap.fillTiles(grid, 4, 3, 18, 3, G);
-  TileMap.fillTiles(grid, 2, 6, 21, 6, G);
-  TileMap.fillTiles(grid, 3, 12, 20, 7, G);
-  TileMap.fillTiles(grid, 5, 19, 15, 3, G);
-
-  // North exit path to Route 101.
-  TileMap.fillTiles(grid, 10, 0, 4, 5, F);
-
-  // Door paths and main walking paths.
-  TileMap.fillTiles(grid, 4, 10, 18, 2, F);
-  TileMap.fillTiles(grid, 10, 5, 4, 7, F);
-  TileMap.fillTiles(grid, 11, 18, 6, 3, F);
-  TileMap.fillTiles(grid, 14, 12, 4, 8, F);
-
-  // House bodies and roofs.
-  TileMap.fillTiles(grid, 4, 5, 6, 5, O);
-  TileMap.fillTiles(grid, 15, 5, 6, 5, O);
-  TileMap.fillTiles(grid, 5, 12, 9, 6, O);
-
-  // Door and warp tiles.
-  TileMap.fillTiles(grid, 13, 18, 1, 1, D);
-  TileMap.fillTiles(grid, 10, 0, 4, 1, P);
-
-  // Sign and small object blockers.
-  TileMap.setTileInGrid(grid, 9, 8, O);
-  TileMap.setTileInGrid(grid, 14, 8, O);
-  TileMap.setTileInGrid(grid, 17, 13, O);
-  TileMap.setTileInGrid(grid, 8, 18, O);
+  TileMap.stampTiles(grid, SMALL, 0, 0);
 
   return grid;
 }

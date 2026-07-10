@@ -8,12 +8,20 @@ import { Entity } from "./Entity";
 
 export class Player extends Entity {
   private static readonly SPEED = 1;
+  private static readonly JUMP_DURATION = 260;
+  private static readonly JUMP_FRAME = 3;
 
   private readonly idleAnimation = new Animation([0], 150);
   private readonly walkAnimation = new Animation([0, 1, 0, 2], 150);
 
   private nextX = 0;
   private nextY = 0;
+  private jumping = false;
+  private jumpElapsed = 0;
+  private jumpStartX = 0;
+  private jumpStartY = 0;
+  private jumpTargetX = 0;
+  private jumpTargetY = 0;
 
   private warpCooldown = 0;
 
@@ -31,6 +39,11 @@ export class Player extends Entity {
   public update(deltaTime: number): void {
     if (this.warpCooldown > 0) {
       this.warpCooldown -= deltaTime;
+    }
+
+    if (this.jumping) {
+      this.updateJump(deltaTime);
+      return;
     }
 
     let moving = false;
@@ -72,6 +85,10 @@ export class Player extends Entity {
   }
 
   public override getCurrentFrame(): HTMLImageElement {
+    if (this.jumping) {
+      return this.sprite.getFrame(this.direction, Player.JUMP_FRAME);
+    }
+
     return this.sprite.getFrame(
       this.direction,
       this.inputMoving() ? this.walkAnimation.getFrame() : this.idleAnimation.getFrame(),
@@ -99,6 +116,44 @@ export class Player extends Entity {
 
     this.nextX = x;
     this.nextY = y;
+  }
+
+  public isJumping(): boolean {
+    return this.jumping;
+  }
+
+  public startJump(targetX: number, targetY: number): void {
+    if (this.jumping) {
+      return;
+    }
+
+    this.direction = Direction.Down;
+    this.jumping = true;
+    this.jumpElapsed = 0;
+    this.jumpStartX = this.x;
+    this.jumpStartY = this.y;
+    this.jumpTargetX = targetX;
+    this.jumpTargetY = targetY;
+    this.nextX = this.x;
+    this.nextY = this.y;
+    this.walkAnimation.reset();
+  }
+
+  private updateJump(deltaTime: number): void {
+    this.jumpElapsed += deltaTime;
+
+    const progress = Math.min(this.jumpElapsed / Player.JUMP_DURATION, 1);
+    const x = this.jumpStartX + (this.jumpTargetX - this.jumpStartX) * progress;
+    const y = this.jumpStartY + (this.jumpTargetY - this.jumpStartY) * progress;
+
+    super.setPosition(x, y);
+    this.nextX = x;
+    this.nextY = y;
+
+    if (progress >= 1) {
+      this.jumping = false;
+      this.setPosition(this.jumpTargetX, this.jumpTargetY);
+    }
   }
 
   public getFacingTile(): { x: number; y: number } {

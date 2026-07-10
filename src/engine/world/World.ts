@@ -11,7 +11,7 @@ import { Direction, opposite } from "@/entities/Direction";
 import type { Warp } from "../map/Warp";
 import type { Door } from "@/entities/Door";
 import type { MapObject } from "../map/MapObject";
-import type { TileType } from "../map/TileType";
+import { TileType } from "../map/TileType";
 
 interface Rectangle {
   x: number;
@@ -64,28 +64,38 @@ export class World {
       entity.update(deltaTime);
     }
 
+    if (this.player.isJumping()) {
+      this.followPlayer();
+      return;
+    }
+
     const next = this.player.getNextPosition();
 
     const collisionX = next.x + (this.player.getCollisionX() - this.player.getX());
     const collisionY = next.y + (this.player.getCollisionY() - this.player.getY());
+    const collisionWidth = this.player.getCollisionWidth();
+    const collisionHeight = this.player.getCollisionHeight();
 
-    const blocked = this.isBlocked(
-      collisionX,
-      collisionY,
-      this.player.getCollisionWidth(),
-      this.player.getCollisionHeight(),
-    );
+    if (this.shouldStartCliffJump(collisionX, collisionY, collisionWidth, collisionHeight)) {
+      const targetX = this.player.getX();
+      const targetY = this.player.getY() + TileMap.TILE_SIZE * 2;
+      const targetCollisionX = targetX + (this.player.getCollisionX() - this.player.getX());
+      const targetCollisionY = targetY + (this.player.getCollisionY() - this.player.getY());
+
+      if (!this.isBlocked(targetCollisionX, targetCollisionY, collisionWidth, collisionHeight)) {
+        this.player.startJump(targetX, targetY);
+        this.followPlayer();
+        return;
+      }
+    }
+
+    const blocked = this.isBlocked(collisionX, collisionY, collisionWidth, collisionHeight);
 
     if (!blocked) {
       this.player.setPosition(next.x, next.y);
     }
 
-    this.camera.follow(
-      this.player.getCollisionX() + this.player.getCollisionWidth() / 2,
-      this.player.getCollisionY() + this.player.getCollisionHeight() / 2,
-      this.map.getPixelWidth(),
-      this.map.getPixelHeight(),
-    );
+    this.followPlayer();
   }
 
   public render(renderer: Renderer): void {
@@ -134,6 +144,10 @@ export class World {
     }
 
     if (this.pendingWarp) {
+      return false;
+    }
+
+    if (this.player.isJumping()) {
       return false;
     }
 
@@ -201,6 +215,22 @@ export class World {
       this.map.isBlocked(x, y, width, height) ||
       this.isObjectBlocked(x, y, width, height) ||
       this.isNpcBlocked(x, y, width, height)
+    );
+  }
+
+  private shouldStartCliffJump(x: number, y: number, width: number, height: number): boolean {
+    return (
+      this.player.getDirection() === Direction.Down &&
+      this.map.rectangleOverlapsTileType(x, y, width, height, TileType.Cliff)
+    );
+  }
+
+  private followPlayer(): void {
+    this.camera.follow(
+      this.player.getCollisionX() + this.player.getCollisionWidth() / 2,
+      this.player.getCollisionY() + this.player.getCollisionHeight() / 2,
+      this.map.getPixelWidth(),
+      this.map.getPixelHeight(),
     );
   }
 
@@ -310,6 +340,10 @@ export class World {
     }
 
     if (!this.player.canWarp()) {
+      return null;
+    }
+
+    if (this.player.isJumping()) {
       return null;
     }
 

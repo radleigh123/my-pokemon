@@ -123,8 +123,8 @@ export class Game {
     const column = spawnColumn ?? map.getSpawnX();
     const row = spawnRow ?? map.getSpawnY();
 
-    const playerX = column * TileMap.TILE_SIZE;
-    const playerY = row * TileMap.TILE_SIZE;
+    const playerX = map.getTilePixelX(column);
+    const playerY = map.getTilePixelY(row);
     const collisionX = playerX + (this.player.getCollisionX() - this.player.getX());
     const collisionY = playerY + (this.player.getCollisionY() - this.player.getY());
 
