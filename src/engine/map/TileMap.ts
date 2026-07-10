@@ -242,7 +242,10 @@ export class TileMap {
       tile === TileType.Wall ||
       tile === TileType.Water ||
       tile === TileType.Object ||
-      tile === TileType.Cliff
+      tile === TileType.Cliff ||
+      tile === TileType.Tree ||
+      tile === TileType.Building ||
+      tile === TileType.Sign
     );
   }
 
@@ -329,14 +332,8 @@ export class TileMap {
       }
     }
 
-    const requiredColumns = Math.ceil(this.image.width / TileMap.TILE_SIZE);
-    const requiredRows = Math.ceil(this.image.height / TileMap.TILE_SIZE);
-
-    if (columns < requiredColumns || this.tiles.length < requiredRows) {
-      throw new Error(
-        `TileMap collision grid ${columns}x${this.tiles.length} does not cover image ` +
-          `${this.image.width}x${this.image.height}.`,
-      );
+    if (columns !== this.columns || this.tiles.length !== this.rows) {
+      throw new Error("TileMap collision grid dimensions changed after construction.");
     }
   }
 

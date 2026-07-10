@@ -22,6 +22,15 @@ export class Player extends Entity {
   private jumpStartY = 0;
   private jumpTargetX = 0;
   private jumpTargetY = 0;
+  private scriptedMoving = false;
+  private scriptedElapsed = 0;
+  private scriptedDuration = 0;
+  private scriptedStartX = 0;
+  private scriptedStartY = 0;
+  private scriptedTargetX = 0;
+  private scriptedTargetY = 0;
+  private scriptedFadeOut = false;
+  private renderOpacity = 1;
 
   private warpCooldown = 0;
 
@@ -39,6 +48,11 @@ export class Player extends Entity {
   public update(deltaTime: number): void {
     if (this.warpCooldown > 0) {
       this.warpCooldown -= deltaTime;
+    }
+
+    if (this.scriptedMoving) {
+      this.updateScriptedMove(deltaTime);
+      return;
     }
 
     if (this.jumping) {
@@ -91,7 +105,9 @@ export class Player extends Entity {
 
     return this.sprite.getFrame(
       this.direction,
-      this.inputMoving() ? this.walkAnimation.getFrame() : this.idleAnimation.getFrame(),
+      this.scriptedMoving || this.inputMoving()
+        ? this.walkAnimation.getFrame()
+        : this.idleAnimation.getFrame(),
     );
   }
 
@@ -116,10 +132,45 @@ export class Player extends Entity {
 
     this.nextX = x;
     this.nextY = y;
+    this.renderOpacity = 1;
   }
 
   public isJumping(): boolean {
     return this.jumping;
+  }
+
+  public isScriptedMoving(): boolean {
+    return this.scriptedMoving;
+  }
+
+  public getRenderOpacity(): number {
+    return this.renderOpacity;
+  }
+
+  public face(direction: Direction): void {
+    this.direction = direction;
+  }
+
+  public startScriptedMove(
+    targetX: number,
+    targetY: number,
+    direction: Direction,
+    duration: number,
+    fadeOut: boolean,
+  ): void {
+    this.direction = direction;
+    this.scriptedMoving = true;
+    this.scriptedElapsed = 0;
+    this.scriptedDuration = Math.max(1, duration);
+    this.scriptedStartX = this.x;
+    this.scriptedStartY = this.y;
+    this.scriptedTargetX = targetX;
+    this.scriptedTargetY = targetY;
+    this.scriptedFadeOut = fadeOut;
+    this.nextX = this.x;
+    this.nextY = this.y;
+    this.renderOpacity = 1;
+    this.walkAnimation.reset();
   }
 
   public startJump(targetX: number, targetY: number): void {
@@ -153,6 +204,29 @@ export class Player extends Entity {
     if (progress >= 1) {
       this.jumping = false;
       this.setPosition(this.jumpTargetX, this.jumpTargetY);
+    }
+  }
+
+  private updateScriptedMove(deltaTime: number): void {
+    this.scriptedElapsed += deltaTime;
+    this.walkAnimation.update(deltaTime);
+
+    const progress = Math.min(this.scriptedElapsed / this.scriptedDuration, 1);
+    const x = this.scriptedStartX + (this.scriptedTargetX - this.scriptedStartX) * progress;
+    const y = this.scriptedStartY + (this.scriptedTargetY - this.scriptedStartY) * progress;
+
+    super.setPosition(x, y);
+    this.nextX = x;
+    this.nextY = y;
+    this.renderOpacity = this.scriptedFadeOut ? 1 - progress : 1;
+
+    if (progress >= 1) {
+      this.scriptedMoving = false;
+      super.setPosition(this.scriptedTargetX, this.scriptedTargetY);
+      this.nextX = this.scriptedTargetX;
+      this.nextY = this.scriptedTargetY;
+      this.renderOpacity = this.scriptedFadeOut ? 0 : 1;
+      this.walkAnimation.reset();
     }
   }
 

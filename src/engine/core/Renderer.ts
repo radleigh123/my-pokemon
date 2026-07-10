@@ -2,6 +2,7 @@ import type { Door } from "@/entities/Door";
 import { TileMap } from "../map/TileMap";
 import type { MapObject } from "../map/MapObject";
 import { Direction } from "@/entities/Direction";
+import { TileType } from "../map/TileType";
 
 export class Renderer {
   public static readonly WIDTH = 240;
@@ -41,12 +42,15 @@ export class Renderer {
     this.context.drawImage(image, x, y);
   }
 
-  public drawSprite(sprite: HTMLImageElement, x: number, y: number): void {
+  public drawSprite(sprite: HTMLImageElement, x: number, y: number, opacity = 1): void {
+    this.context.save();
+    this.context.globalAlpha = Math.max(0, Math.min(opacity, 1));
     this.context.drawImage(
       sprite,
       Math.round(x - this.cameraX),
       Math.round(y - (sprite.height - 16) - this.cameraY),
     );
+    this.context.restore();
   }
 
   public drawMap(map: TileMap): void {
@@ -115,7 +119,7 @@ export class Renderer {
 
         const tile = map.getTile(x, y);
 
-        this.context.strokeStyle = map.isBlockingTile(tile) ? "red" : "rgba(255, 255, 255, 0.25)";
+        this.context.strokeStyle = this.getCollisionDebugColor(tile, map.isBlockingTile(tile));
         this.context.strokeRect(x - this.cameraX, y - this.cameraY, width, height);
       }
     }
@@ -154,5 +158,31 @@ export class Renderer {
       Math.round(object.x - this.cameraX),
       Math.round(object.y - this.cameraY),
     );
+  }
+
+  private getCollisionDebugColor(tile: TileType, blocking: boolean): string {
+    switch (tile) {
+      case TileType.Tree:
+        return "rgba(46, 204, 113, 0.9)";
+
+      case TileType.Building:
+        return "rgba(231, 76, 60, 0.95)";
+
+      case TileType.Sign:
+        return "rgba(241, 196, 15, 0.95)";
+
+      case TileType.Cliff:
+        return "rgba(230, 126, 34, 0.95)";
+
+      case TileType.Warp:
+      case TileType.Door:
+        return "rgba(0, 255, 255, 0.8)";
+
+      case TileType.Grass:
+        return "rgba(52, 152, 219, 0.45)";
+
+      default:
+        return blocking ? "red" : "rgba(255, 255, 255, 0.25)";
+    }
   }
 }

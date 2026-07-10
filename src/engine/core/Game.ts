@@ -7,7 +7,6 @@ import { Input } from "../input/Input";
 import { Player } from "@/entities/Player";
 import { Camera } from "./Camera";
 import { World } from "../world/World";
-import { TileMap } from "../map/TileMap";
 import { Key } from "../input/Key";
 import { AudioManager } from "@/audio/AudioManager";
 import { MapId, MapManager } from "../map/MapManager";
@@ -86,12 +85,19 @@ export class Game {
 
     this.world.update(deltaTime);
 
+    if (this.world.isDoorWarpInProgress()) {
+      this.input.endFrame();
+      return;
+    }
+
     this.updateGrassEncounterHook();
 
     const warp = this.world.getPendingWarp();
 
     if (warp) {
-      this.startMapTransition(warp.destination, warp.spawnColumn, warp.spawnRow);
+      this.startMapTransition(warp.destination, warp.spawnColumn, warp.spawnRow, {
+        skipFadeOut: warp.requiresDoorAnimation === true,
+      });
     }
 
     this.input.endFrame();
@@ -181,15 +187,31 @@ export class Game {
     // Future wild encounter hook.
   }
 
-  private startMapTransition(id: MapId, spawnColumn: number, spawnRow: number): void {
+  private startMapTransition(
+    id: MapId,
+    spawnColumn: number,
+    spawnRow: number,
+    options: { skipFadeOut?: boolean } = {},
+  ): void {
     if (this.loadingMap) {
       return;
     }
 
     this.loadingMap = true;
-    this.transitionPhase = "fadeOut";
     this.transitionOpacity = 0;
-    this.transitionTarget = { id, spawnColumn, spawnRow };
+    this.transitionTarget = {
+      id,
+      spawnColumn,
+      spawnRow,
+    };
+
+    if (options.skipFadeOut === true) {
+      this.transitionPhase = "loading";
+      this.loadTransitionTarget();
+      return;
+    }
+
+    this.transitionPhase = "fadeOut";
   }
 
   private updateTransition(deltaTime: number): void {

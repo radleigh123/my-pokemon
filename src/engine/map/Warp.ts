@@ -1,4 +1,5 @@
 import type { MapId } from "./MapManager";
+import type { Direction } from "@/entities/Direction";
 
 export interface Warp {
   readonly column: number;
@@ -13,4 +14,5 @@ export interface Warp {
   readonly spawnRow: number;
 
   readonly requiresDoorAnimation?: boolean;
+  readonly entryDirection?: Direction;
 }
