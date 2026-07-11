@@ -1,7 +1,7 @@
 import { AssetManager } from "@/engine/assets/AssetManager";
 import { TileMap } from "@/engine/map/TileMap";
 
-import lab from "@/assets/maps/lab.png";
+import lab from "@/assets/maps/littleroot/lab.png";
 import { Music } from "@/audio/Music";
 import { createCollisionGrid } from "./data/LabCollision";
 import type { GameMap } from "../engine/map/GameMap";

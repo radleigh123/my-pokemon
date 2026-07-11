@@ -95,7 +95,7 @@ export class Player extends Entity {
   }
 
   public resetWarpCooldown(): void {
-    this.warpCooldown = 1500;
+    this.warpCooldown = 500;
   }
 
   public override getCurrentFrame(): HTMLImageElement {

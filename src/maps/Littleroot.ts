@@ -44,6 +44,30 @@ export async function createLittleroot(assets: AssetManager, doorSprite: Sprite)
       spawnColumn: 12,
       spawnRow: 18,
     },
+    {
+      column: 7,
+      row: 8,
+
+      width: 16,
+      height: 16,
+
+      destination: MapId.House1Floor1,
+
+      spawnColumn: 8.5,
+      spawnRow: 7,
+    },
+    {
+      column: 16,
+      row: 8,
+
+      width: 16,
+      height: 16,
+
+      destination: MapId.House2Floor1,
+
+      spawnColumn: 1.5,
+      spawnRow: 7,
+    },
   ];
 
   const tiles = createCollisionGrid();
