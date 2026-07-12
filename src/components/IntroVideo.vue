@@ -5,12 +5,14 @@ onMounted(() => {
   window.addEventListener("click", unmute, { once: true })
   window.addEventListener("keydown", unmute, { once: true })
   window.addEventListener("keydown", onKeydown)
+  window.addEventListener("keyup", onKeyup)
 })
 
 onBeforeUnmount(() => {
   window.removeEventListener("click", unmute)
   window.removeEventListener("keydown", unmute)
   window.removeEventListener("keydown", onKeydown)
+  window.removeEventListener("keyup", onKeyup)
 })
 
 const emit = defineEmits<{
@@ -20,11 +22,30 @@ const emit = defineEmits<{
 const showUnmutePrompt = ref(true)
 
 const video = ref<HTMLVideoElement>()
+const INTRO_SPEED = 1
+const INTRO_FAST_SPEED = 1.75
 
 function onKeydown(e: KeyboardEvent) {
-  if (e.code === "Enter" || e.code === "KeyX") {
+  if (e.code === "Enter") {
     emit("start")
+    return
   }
+
+  if (e.code === "KeyZ") {
+    setPlaybackSpeed(INTRO_FAST_SPEED)
+  }
+}
+
+function onKeyup(e: KeyboardEvent) {
+  if (e.code === "KeyZ") {
+    setPlaybackSpeed(INTRO_SPEED)
+  }
+}
+
+function setPlaybackSpeed(speed: number) {
+  if (!video.value) return
+
+  video.value.playbackRate = speed
 }
 
 function unmute() {
