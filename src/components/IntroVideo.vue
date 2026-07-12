@@ -22,7 +22,7 @@ const showUnmutePrompt = ref(true)
 const video = ref<HTMLVideoElement>()
 
 function onKeydown(e: KeyboardEvent) {
-  if (e.code === "Enter") {
+  if (e.code === "Enter" || e.code === "KeyZ") {
     emit("start")
   }
 }

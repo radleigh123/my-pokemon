@@ -1,6 +1,19 @@
 import { defineStore } from "pinia";
 import { ref } from "vue";
 
+export type InputButton = "up" | "down" | "left" | "right" | "a" | "b" | "start" | "select";
+
+const keyCodeByButton: Record<InputButton, string> = {
+  up: "ArrowUp",
+  down: "ArrowDown",
+  left: "ArrowLeft",
+  right: "ArrowRight",
+  a: "KeyZ",
+  b: "KeyX",
+  start: "Enter",
+  select: "Backspace",
+}
+
 export const useInputStore = defineStore("input", () => {
   const up = ref(false)
   const down = ref(false)
@@ -12,6 +25,39 @@ export const useInputStore = defineStore("input", () => {
 
   const start = ref(false)
   const select = ref(false)
+
+  const buttons = {
+    up,
+    down,
+    left,
+    right,
+    a,
+    b,
+    start,
+    select,
+  }
+
+  function setButton(button: InputButton, pressed: boolean) {
+    buttons[button].value = pressed
+  }
+
+  function dispatchKeyboardInput(button: InputButton, type: "keydown" | "keyup") {
+    window.dispatchEvent(new KeyboardEvent(type, {
+      bubbles: true,
+      cancelable: true,
+      code: keyCodeByButton[button],
+    }))
+  }
+
+  function press(button: InputButton) {
+    setButton(button, true)
+    dispatchKeyboardInput(button, "keydown")
+  }
+
+  function release(button: InputButton) {
+    setButton(button, false)
+    dispatchKeyboardInput(button, "keyup")
+  }
 
   function keyDown(e: KeyboardEvent) {
     switch (e.code) {
@@ -94,6 +140,8 @@ export const useInputStore = defineStore("input", () => {
     b,
     start,
     select,
+    press,
+    release,
     keyDown,
     keyUp
   }

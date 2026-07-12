@@ -110,7 +110,7 @@ export class Game {
     this.renderer.clear();
     this.world.render(this.renderer);
     this.world.drawPlayerCollision(this.renderer);
-    this.renderer.drawCollision(this.world.getTileMap());
+    // this.renderer.drawCollision(this.world.getTileMap());
     // this.renderer.drawWarps(this.world.getTileMap());
 
     if (this.transitionOpacity > 0) {
@@ -163,8 +163,6 @@ export class Game {
       throw new Error(`Invalid spawn ${column},${row} for map ${MapId[id]}.`);
     }
 
-    await this.audio.play(map.getMusic());
-
     this.player.setPosition(playerX, playerY);
 
     if (spawnDirection !== undefined) {
@@ -187,6 +185,8 @@ export class Game {
     }
 
     this.playerWasInGrass = this.world.getPlayerTile() === TileType.Grass;
+
+    void this.audio.play(map.getMusic());
   }
 
   private updateGrassEncounterHook(): void {
