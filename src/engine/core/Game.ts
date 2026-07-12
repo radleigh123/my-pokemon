@@ -30,6 +30,7 @@ export class Game {
 
   private world!: World;
   private player!: Player;
+  private paused = false;
   private loadingMap = false;
   private playerWasInGrass = false;
   private transitionPhase: TransitionPhase = "none";
@@ -67,9 +68,18 @@ export class Game {
     this.input.destroy();
   }
 
+  public setPaused(paused: boolean): void {
+    this.paused = paused;
+  }
+
   private update = (deltaTime: number): void => {
     if (this.transitionPhase !== "none") {
       this.updateTransition(deltaTime);
+      this.input.endFrame();
+      return;
+    }
+
+    if (this.paused) {
       this.input.endFrame();
       return;
     }
