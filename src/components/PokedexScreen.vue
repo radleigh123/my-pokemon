@@ -13,7 +13,21 @@ import { pokedexPlaceholders, type PokedexPlaceholderEntry } from "@/data/pokede
 const props = defineProps<{
   selectedIndex: number
   searchIndex: number
+  searchMode: "fields" | "name" | "color" | "type" | "order"
+  searchOptionIndex: number
+  searchTypeSlot: 1 | 2
+  searchFilters: {
+    nameGroup: string
+    color: string
+    type1: string
+    type2: string
+    order: string
+  }
   view: "list" | "detail" | "search"
+}>();
+
+const emit = defineEmits<{
+  (event: "filtered-count-change", count: number): void
 }>();
 
 const NATIVE_WIDTH = 240;
@@ -21,16 +35,44 @@ const NATIVE_HEIGHT = 160;
 const LIST_WINDOW_CENTER_INDEX = 5;
 const LIST_WINDOW_SIZE = 14;
 const searchRows = [
-  { label: "NAME", value: "-----" },
-  { label: "COLOR", value: "-----" },
-  { label: "TYPE", value: "-----" },
-  { label: "ORDER", value: "NUMERICAL" },
-  { label: "OK", value: "" },
+  { label: "NAME", field: "nameGroup" },
+  { label: "COLOR", field: "color" },
+  { label: "TYPE", field: "type" },
+  { label: "ORDER", field: "order" },
+  { label: "OK", field: "ok" },
 ];
+const searchOptions = {
+  name: ["DON'T SPECIFY", "ABC", "DEF", "GHI", "JKL", "MNO", "PQR", "STU", "VWX", "YZ"],
+  color: ["DON'T SPECIFY", "BLACK", "BLUE", "BROWN", "GRAY", "GREEN", "PINK", "PURPLE", "RED", "WHITE", "YELLOW"],
+  type: [
+    "DON'T SPECIFY",
+    "NORMAL",
+    "FIRE",
+    "WATER",
+    "ELECTRIC",
+    "GRASS",
+    "ICE",
+    "FIGHTING",
+    "POISON",
+    "GROUND",
+    "FLYING",
+    "PSYCHIC",
+    "BUG",
+    "ROCK",
+    "GHOST",
+    "DRAGON",
+    "DARK",
+    "STEEL",
+    "FAIRY",
+  ],
+  order: ["NUMERICAL", "A TO Z", "HEAVIEST", "LIGHTEST", "TALLEST", "SMALLEST"],
+};
 const root = ref<HTMLElement>();
 const scaleX = ref(1);
 const scaleY = ref(1);
 const entries = ref<PokedexPlaceholderEntry[]>(pokedexPlaceholders.map((entry) => ({ ...entry })));
+const namesLoaded = ref(false);
+const loadingAllDetails = ref(false);
 const loadedDetailIds = new Set<number>();
 const loadingDetailIds = new Set<number>();
 let resizeObserver: ResizeObserver | undefined;
@@ -41,19 +83,69 @@ interface VisibleListRow {
 }
 
 const selectedEntry = computed(() => {
-  return entries.value[props.selectedIndex] ?? entries.value[0] ?? pokedexPlaceholders[0]!;
+  return filteredEntries.value[props.selectedIndex] ?? filteredEntries.value[0] ?? entries.value[0] ?? pokedexPlaceholders[0]!;
 });
 
 const detailCategory = computed(() => selectedEntry.value.category.toUpperCase());
 
 const detailName = computed(() => selectedEntry.value.name.toUpperCase());
 
+const activeSearchOptions = computed(() => {
+  if (props.searchMode === "fields") {
+    return [];
+  }
+
+  return searchOptions[props.searchMode];
+});
+
+const filteredEntries = computed(() => {
+  let result = [...entries.value];
+  const { nameGroup, color, type1, type2, order } = props.searchFilters;
+
+  if (nameGroup !== "DON'T SPECIFY") {
+    result = result.filter((entry) => nameGroup.includes(entry.name.charAt(0).toUpperCase()));
+  }
+
+  if (color !== "DON'T SPECIFY") {
+    result = result.filter((entry) => entry.color === color);
+  }
+
+  const selectedTypes = [type1, type2].filter((type) => type !== "DON'T SPECIFY");
+
+  if (selectedTypes.length > 0) {
+    result = result.filter((entry) => selectedTypes.every((type) => entry.types?.includes(type)));
+  }
+
+  switch (order) {
+    case "A TO Z":
+      result.sort((left, right) => left.name.localeCompare(right.name));
+      break;
+    case "HEAVIEST":
+      result.sort((left, right) => (right.weightValue ?? -1) - (left.weightValue ?? -1));
+      break;
+    case "LIGHTEST":
+      result.sort((left, right) => (left.weightValue ?? Number.MAX_SAFE_INTEGER) - (right.weightValue ?? Number.MAX_SAFE_INTEGER));
+      break;
+    case "TALLEST":
+      result.sort((left, right) => (right.heightValue ?? -1) - (left.heightValue ?? -1));
+      break;
+    case "SMALLEST":
+      result.sort((left, right) => (left.heightValue ?? Number.MAX_SAFE_INTEGER) - (right.heightValue ?? Number.MAX_SAFE_INTEGER));
+      break;
+    default:
+      result.sort((left, right) => left.id - right.id);
+      break;
+  }
+
+  return result;
+});
+
 const visibleListRows = computed<VisibleListRow[]>(() => {
   return Array.from({ length: LIST_WINDOW_SIZE }, (_, rowIndex) => {
     const index = props.selectedIndex + rowIndex - LIST_WINDOW_CENTER_INDEX;
 
     return {
-      entry: entries.value[index] ?? null,
+      entry: filteredEntries.value[index] ?? null,
       index,
     };
   });
@@ -94,6 +186,14 @@ watch(
 );
 
 watch(
+  () => filteredEntries.value.length,
+  (count) => {
+    emit("filtered-count-change", count);
+  },
+  { immediate: true },
+);
+
+watch(
   () => props.view,
   (view) => {
     if (view !== "search") {
@@ -101,6 +201,27 @@ watch(
     }
   },
 );
+
+watch(
+  () => [
+    props.searchFilters.color,
+    props.searchFilters.type1,
+    props.searchFilters.type2,
+    props.searchFilters.order,
+  ],
+  () => {
+    if (searchNeedsAllDetails.value) {
+      void loadAllEntryDetails();
+    }
+  },
+);
+
+const searchNeedsAllDetails = computed(() => (
+  props.searchFilters.color !== "DON'T SPECIFY" ||
+  props.searchFilters.type1 !== "DON'T SPECIFY" ||
+  props.searchFilters.type2 !== "DON'T SPECIFY" ||
+  ["HEAVIEST", "LIGHTEST", "TALLEST", "SMALLEST"].includes(props.searchFilters.order)
+));
 
 function formatDexNumber(id: number): string {
   return `No.${String(id).padStart(3, "0")}`;
@@ -119,16 +240,41 @@ async function loadPokedexNames(): Promise<void> {
       ...names[index],
     }));
 
+    namesLoaded.value = true;
     void loadSelectedEntry();
+
+    if (searchNeedsAllDetails.value) {
+      void loadAllEntryDetails();
+    }
   } catch (error) {
     console.warn("Unable to load Hoenn Pokedex names from PokeAPI.", error);
   }
 }
 
 async function loadSelectedEntry(): Promise<void> {
-  const entry = entries.value[props.selectedIndex];
+  await loadEntryDetails(selectedEntry.value);
+}
 
-  if (!entry || loadedDetailIds.has(entry.id) || loadingDetailIds.has(entry.id)) {
+async function loadAllEntryDetails(): Promise<void> {
+  if (!namesLoaded.value || loadingAllDetails.value) {
+    return;
+  }
+
+  loadingAllDetails.value = true;
+
+  try {
+    for (const entry of entries.value) {
+      if (!loadedDetailIds.has(entry.id)) {
+        await loadEntryDetails(entry);
+      }
+    }
+  } finally {
+    loadingAllDetails.value = false;
+  }
+}
+
+async function loadEntryDetails(entry: PokedexPlaceholderEntry): Promise<void> {
+  if (loadedDetailIds.has(entry.id) || loadingDetailIds.has(entry.id)) {
     return;
   }
 
@@ -172,7 +318,7 @@ async function loadSelectedEntry(): Promise<void> {
         </div>
 
         <img v-if="selectedIndex > 0" class="pokedex-arrow pokedex-arrow--up" :src="arrowUp" alt="">
-        <img v-if="selectedIndex < entries.length - 1" class="pokedex-arrow pokedex-arrow--down" :src="arrowDown"
+        <img v-if="selectedIndex < filteredEntries.length - 1" class="pokedex-arrow pokedex-arrow--down" :src="arrowDown"
           alt="">
 
         <div class="pokedex-preview">
@@ -212,10 +358,51 @@ async function loadSelectedEntry(): Promise<void> {
         <img class="pokedex-search-bg" :src="searchBackground" alt="">
 
         <div class="pokedex-search-list">
-          <div v-for="(row, index) in searchRows" :key="row.label" class="pokedex-search-row"
-            :class="{ 'pokedex-search-row--selected': index === searchIndex }">
+          <div
+            v-for="(row, index) in searchRows"
+            :key="row.label"
+            class="pokedex-search-row"
+            :class="{
+              'pokedex-search-row--selected': searchMode === 'fields' && index === searchIndex,
+              'pokedex-search-row--type': row.field === 'type',
+            }"
+          >
             <span class="pokedex-search-row__cursor">▶</span>
-            <span class="pokedex-search-row__value">{{ row.value }}</span>
+            <template v-if="row.field === 'nameGroup'">
+              <span class="pokedex-search-row__value">{{ searchFilters.nameGroup }}</span>
+            </template>
+            <template v-else-if="row.field === 'color'">
+              <span class="pokedex-search-row__value">{{ searchFilters.color }}</span>
+            </template>
+            <template v-else-if="row.field === 'type'">
+              <span
+                class="pokedex-search-row__value pokedex-search-row__value--type pokedex-search-row__value--type-left"
+                :class="{ 'pokedex-search-row__value--active': searchTypeSlot === 1 }"
+              >
+                {{ searchFilters.type1 }}
+              </span>
+              <span
+                class="pokedex-search-row__value pokedex-search-row__value--type pokedex-search-row__value--type-right"
+                :class="{ 'pokedex-search-row__value--active': searchTypeSlot === 2 }"
+              >
+                {{ searchFilters.type2 }}
+              </span>
+            </template>
+            <template v-else-if="row.field === 'order'">
+              <span class="pokedex-search-row__value">{{ searchFilters.order }}</span>
+            </template>
+          </div>
+        </div>
+
+        <div v-if="searchMode !== 'fields'" class="pokedex-search-options">
+          <div
+            v-for="(option, index) in activeSearchOptions"
+            :key="option"
+            class="pokedex-search-option"
+            :class="{ 'pokedex-search-option--selected': index === searchOptionIndex }"
+          >
+            <span class="pokedex-search-option__cursor">▶</span>
+            <span>{{ option }}</span>
           </div>
         </div>
       </template>
@@ -477,7 +664,7 @@ async function loadSelectedEntry(): Promise<void> {
   position: absolute;
   left: 2px;
   top: 16px;
-  width: 132px;
+  width: 137px;
 }
 
 .pokedex-search-row {
@@ -486,6 +673,10 @@ async function loadSelectedEntry(): Promise<void> {
   align-items: center;
   height: 15px;
   white-space: nowrap;
+}
+
+.pokedex-search-row--type {
+  grid-template-columns: 8px 34px 45px 45px;
 }
 
 .pokedex-search-row__cursor {
@@ -506,5 +697,51 @@ async function loadSelectedEntry(): Promise<void> {
   grid-column: 3;
   overflow: hidden;
   text-overflow: clip;
+}
+
+.pokedex-search-row__value--type {
+  font-size: 6px;
+}
+
+.pokedex-search-row__value--type-left {
+  grid-column: 3;
+}
+
+.pokedex-search-row__value--type-right {
+  grid-column: 4;
+}
+
+.pokedex-search-row__value--active {
+  color: #101010;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.pokedex-search-options {
+  position: absolute;
+  left: 139px;
+  top: 17px;
+  width: 94px;
+  max-height: 86px;
+  overflow: hidden;
+}
+
+.pokedex-search-option {
+  display: grid;
+  grid-template-columns: 7px 1fr;
+  align-items: center;
+  height: 8px;
+  margin-bottom: 3px;
+  white-space: nowrap;
+}
+
+.pokedex-search-option__cursor {
+  visibility: hidden;
+  font-size: 6px;
+  transform: translateY(-1px);
+}
+
+.pokedex-search-option--selected .pokedex-search-option__cursor {
+  visibility: visible;
 }
 </style>

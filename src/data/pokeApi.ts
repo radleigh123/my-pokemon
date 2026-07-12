@@ -19,6 +19,9 @@ interface PokeApiPokemonResponse {
   name: string;
   height: number;
   weight: number;
+  types: Array<{
+    type: PokeApiNamedResource;
+  }>;
   sprites: {
     front_default: string | null;
     versions?: {
@@ -52,6 +55,7 @@ interface PokeApiSpeciesResponse {
     genus: string;
     language: PokeApiNamedResource;
   }>;
+  color: PokeApiNamedResource;
 }
 
 export async function fetchPokedexNames(
@@ -86,6 +90,10 @@ export async function fetchPokedexEntry(entry: PokedexPlaceholderEntry): Promise
     owned: false,
     height: formatHeight(pokemon.height),
     weight: formatWeight(pokemon.weight),
+    color: species.color.name.toUpperCase(),
+    types: pokemon.types.map((slot) => slot.type.name.toUpperCase()),
+    heightValue: pokemon.height,
+    weightValue: pokemon.weight,
     category: getCategory(species),
     description: getDescription(species),
     apiName: pokemon.name,

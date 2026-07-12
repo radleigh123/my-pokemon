@@ -7,6 +7,10 @@ export interface PokedexPlaceholderEntry {
   weight: string;
   category: string;
   description: string;
+  color?: string;
+  types?: string[];
+  heightValue?: number;
+  weightValue?: number;
   apiName?: string;
   sprite?: string;
 }
