@@ -42,9 +42,10 @@ defineProps<{
   box-sizing: border-box;
 
   font-family: var(--game-font);
+  font-size: var(--game-dialogue-font-size);
   font-synthesis: none;
   font-weight: 400;
-  letter-spacing: 0;
+  letter-spacing: var(--game-letter-spacing);
   text-shadow: none;
   -webkit-font-smoothing: none;
   -moz-osx-font-smoothing: unset;

@@ -38,10 +38,10 @@ const items = ["PLAYER", "POKEDEX"]
     inset 0 0 0 4px #d8f0f8;
 
   font-family: var(--game-font);
-  font-size: 14px;
+  font-size: var(--game-menu-font-size);
   font-synthesis: none;
   font-weight: 400;
-  letter-spacing: 0;
+  letter-spacing: var(--game-letter-spacing);
   line-height: 1;
   text-shadow: none;
   -webkit-font-smoothing: none;
@@ -58,7 +58,7 @@ const items = ["PLAYER", "POKEDEX"]
 
 .start-menu__cursor {
   visibility: hidden;
-  font-size: 10px;
+  font-size: 9px;
   transform: translateY(-1px);
 }
 

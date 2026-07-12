@@ -4,7 +4,11 @@ html {
   height: 100%;
 
   --game-font: "Pokemon Game", monospace;
-  --game-font-size: 90%;
+  --game-font-size: 80%;
+  --game-letter-spacing: -0.04em;
+  --game-dialogue-font-size: var(--game-font-size);
+  --game-menu-font-size: 13px;
+  --game-pokedex-font-size: 7px;
 }
 
 @font-face {
@@ -20,7 +24,7 @@ html {
   font-size: var(--game-font-size);
   font-synthesis: none;
   font-weight: 400;
-  letter-spacing: 0;
+  letter-spacing: var(--game-letter-spacing);
   text-shadow: none;
   -webkit-font-smoothing: none;
   -moz-osx-font-smoothing: unset;
@@ -34,6 +38,7 @@ body {
 
   font-family: var(--game-font);
   font-size: var(--game-font-size);
+  letter-spacing: var(--game-letter-spacing);
 
   background-color: rgb(26, 26, 28);
   overflow: hidden;

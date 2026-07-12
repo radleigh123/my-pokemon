@@ -3,7 +3,9 @@ import { ref, onMounted, onBeforeUnmount } from "vue";
 
 import { Game } from "@/engine/core/Game";
 import DialogueBox from "./DialogueBox.vue";
+import PokedexScreen from "./PokedexScreen.vue";
 import StartMenu from "./StartMenu.vue";
+import { pokedexPlaceholders } from "@/data/pokedexPlaceholders";
 
 const canvas = ref<HTMLCanvasElement>();
 
@@ -12,8 +14,12 @@ let game: Game;
 const speaker = ref("");
 const text = ref("");
 const visible = ref(false);
-const menuOpen = ref(false);
+const activeOverlay = ref<"none" | "startMenu" | "pokedex">("none");
 const menuIndex = ref(0);
+const pokedexIndex = ref(0);
+const pokedexView = ref<"list" | "detail" | "search">("list");
+const pokedexSearchIndex = ref(0);
+const POKEDEX_SEARCH_ROW_COUNT = 5;
 
 let uiLoop = 0;
 
@@ -23,7 +29,7 @@ function updateUI() {
   visible.value = dialogue.isActive();
   speaker.value = dialogue.getSpeaker();
   text.value = dialogue.getCurrentLine();
-  game.setPaused(menuOpen.value);
+  game.setPaused(activeOverlay.value !== "none");
 
   uiLoop = requestAnimationFrame(updateUI);
 }
@@ -34,16 +40,26 @@ function onKeyDown(event: KeyboardEvent): void {
   }
 
   if (event.code === "Enter") {
-    if (visible.value && !menuOpen.value) {
+    if (activeOverlay.value === "pokedex") {
+      event.preventDefault();
       return;
     }
 
-    menuOpen.value = !menuOpen.value;
+    if (visible.value && activeOverlay.value === "none") {
+      return;
+    }
+
+    activeOverlay.value = activeOverlay.value === "startMenu" ? "none" : "startMenu";
     event.preventDefault();
     return;
   }
 
-  if (!menuOpen.value) {
+  if (activeOverlay.value === "none") {
+    return;
+  }
+
+  if (activeOverlay.value === "pokedex") {
+    handlePokedexKeyDown(event);
     return;
   }
 
@@ -56,11 +72,69 @@ function onKeyDown(event: KeyboardEvent): void {
 
     case "KeyZ":
     case "Backspace":
-      menuOpen.value = false;
+      activeOverlay.value = "none";
       event.preventDefault();
       break;
 
     case "KeyX":
+      if (menuIndex.value === 1) {
+        pokedexView.value = "list";
+        activeOverlay.value = "pokedex";
+      }
+
+      event.preventDefault();
+      break;
+  }
+}
+
+function handlePokedexKeyDown(event: KeyboardEvent): void {
+  switch (event.code) {
+    case "ArrowUp":
+      if (pokedexView.value === "search") {
+        pokedexSearchIndex.value = Math.max(0, pokedexSearchIndex.value - 1);
+      } else {
+        pokedexIndex.value = Math.max(0, pokedexIndex.value - 1);
+      }
+
+      event.preventDefault();
+      break;
+
+    case "ArrowDown":
+      if (pokedexView.value === "search") {
+        pokedexSearchIndex.value = Math.min(POKEDEX_SEARCH_ROW_COUNT - 1, pokedexSearchIndex.value + 1);
+      } else {
+        pokedexIndex.value = Math.min(pokedexPlaceholders.length - 1, pokedexIndex.value + 1);
+      }
+
+      event.preventDefault();
+      break;
+
+    case "KeyX":
+      if (pokedexView.value === "list") {
+        pokedexView.value = "detail";
+      }
+
+      event.preventDefault();
+      break;
+
+    case "KeyZ":
+      if (pokedexView.value === "detail" || pokedexView.value === "search") {
+        pokedexView.value = "list";
+      } else {
+        activeOverlay.value = "startMenu";
+      }
+
+      event.preventDefault();
+      break;
+
+    case "Backspace":
+      if (pokedexView.value === "list") {
+        pokedexSearchIndex.value = 0;
+        pokedexView.value = "search";
+      } else {
+        pokedexView.value = "list";
+      }
+
       event.preventDefault();
       break;
   }
@@ -95,8 +169,14 @@ onBeforeUnmount(() => {
       :text="text"
     />
     <StartMenu
-      v-if="menuOpen"
+      v-if="activeOverlay === 'startMenu'"
       :selected-index="menuIndex"
+    />
+    <PokedexScreen
+      v-if="activeOverlay === 'pokedex'"
+      :selected-index="pokedexIndex"
+      :search-index="pokedexSearchIndex"
+      :view="pokedexView"
     />
     <canvas ref="canvas"></canvas>
   </div>
