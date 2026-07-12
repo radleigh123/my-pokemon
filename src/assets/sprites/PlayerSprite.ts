@@ -21,9 +21,15 @@ import jumpDown from "../player/jump/down.png";
 import jumpUp from "../player/jump/up.png";
 import jumpLeft from "../player/jump/left.png";
 import jumpRight from "../player/jump/right.png";
+import shadow from "../player/shadow.png";
 import type { AssetManager } from "@/engine/assets/AssetManager";
 
-export async function createPlayerSprite(assets: AssetManager): Promise<Sprite> {
+export interface PlayerVisuals {
+  sprite: Sprite;
+  shadow: HTMLImageElement;
+}
+
+export async function createPlayerSprite(assets: AssetManager): Promise<PlayerVisuals> {
   const [
     down1Image,
     down2Image,
@@ -41,6 +47,7 @@ export async function createPlayerSprite(assets: AssetManager): Promise<Sprite> 
     jumpUpImage,
     jumpLeftImage,
     jumpRightImage,
+    shadowImage,
   ] = await Promise.all([
     assets.loadImage(down1),
     assets.loadImage(down2),
@@ -58,14 +65,18 @@ export async function createPlayerSprite(assets: AssetManager): Promise<Sprite> 
     assets.loadImage(jumpUp),
     assets.loadImage(jumpLeft),
     assets.loadImage(jumpRight),
+    assets.loadImage(shadow),
   ]);
 
-  return new Sprite(
-    new Map([
-      [Direction.Down, [down1Image, down2Image, down3Image, jumpDownImage]],
-      [Direction.Up, [up1Image, up2Image, up3Image, jumpUpImage]],
-      [Direction.Left, [left1Image, left2Image, left3Image, jumpLeftImage]],
-      [Direction.Right, [right1Image, right2Image, right3Image, jumpRightImage]],
-    ]),
-  );
+  return {
+    sprite: new Sprite(
+      new Map([
+        [Direction.Down, [down1Image, down2Image, down3Image, jumpDownImage]],
+        [Direction.Up, [up1Image, up2Image, up3Image, jumpUpImage]],
+        [Direction.Left, [left1Image, left2Image, left3Image, jumpLeftImage]],
+        [Direction.Right, [right1Image, right2Image, right3Image, jumpRightImage]],
+      ]),
+    ),
+    shadow: shadowImage,
+  };
 }

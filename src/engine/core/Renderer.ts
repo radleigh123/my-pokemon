@@ -53,6 +53,17 @@ export class Renderer {
     this.context.restore();
   }
 
+  public drawWorldImage(image: CanvasImageSource, x: number, y: number, opacity = 1): void {
+    this.context.save();
+    this.context.globalAlpha = Math.max(0, Math.min(opacity, 1));
+    this.context.drawImage(
+      image,
+      Math.round(x - this.cameraX),
+      Math.round(y - this.cameraY),
+    );
+    this.context.restore();
+  }
+
   public drawMap(map: TileMap): void {
     this.context.drawImage(
       map.getImage(),

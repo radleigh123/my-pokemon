@@ -48,13 +48,13 @@ export class Game {
   }
 
   public async start(): Promise<void> {
-    const sprite = await createPlayerSprite(this.assets);
+    const playerVisuals = await createPlayerSprite(this.assets);
 
     const doorSprite = await createDoorSprite(this.assets);
 
     this.maps = new MapManager(this.assets, doorSprite);
 
-    this.player = new Player(0, 0, sprite, this.input);
+    this.player = new Player(0, 0, playerVisuals.sprite, playerVisuals.shadow, this.input);
 
     await this.loadMap(MapId.Lab);
 

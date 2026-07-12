@@ -38,6 +38,7 @@ export class Player extends Entity {
     x: number,
     y: number,
     sprite: Sprite,
+    private readonly shadow: HTMLImageElement,
     private readonly input: Input,
   ) {
     super(x, y, 16, 16, sprite);
@@ -137,6 +138,18 @@ export class Player extends Entity {
 
   public isJumping(): boolean {
     return this.jumping;
+  }
+
+  public getJumpShadowFrame(): HTMLImageElement {
+    return this.shadow;
+  }
+
+  public getJumpShadowX(): number {
+    return this.x + this.width / 2 - this.shadow.width / 2;
+  }
+
+  public getJumpShadowY(): number {
+    return this.y + 12;
   }
 
   public isScriptedMoving(): boolean {

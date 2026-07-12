@@ -143,6 +143,14 @@ export class World {
 
     for (const item of renderQueue) {
       if (item instanceof Entity) {
+        if (item === this.player && this.player.isJumping()) {
+          renderer.drawWorldImage(
+            this.player.getJumpShadowFrame(),
+            this.player.getJumpShadowX(),
+            this.player.getJumpShadowY(),
+          );
+        }
+
         const opacity = item === this.player ? this.player.getRenderOpacity() : 1;
         renderer.drawSprite(item.getCurrentFrame(), item.getX(), item.getY(), opacity);
       } else {
