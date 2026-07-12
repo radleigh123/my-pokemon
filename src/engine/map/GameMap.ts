@@ -7,5 +7,5 @@ export interface GameMap {
   readonly tileMap: TileMap;
   readonly npcs: NPC[];
   readonly objects?: MapObject[];
-  door?: Door;
+  readonly doors?: Door[];
 }

@@ -30,24 +30,25 @@ export class World {
   private readonly objects: MapObject[] = [];
   private readonly player: Player;
   private readonly dialogue = new DialogueManager();
-  private readonly door?: Door;
+  private readonly doors: Door[];
 
   private pendingWarp?: Warp;
   private doorWarpPhase?: DoorWarpPhase;
+  private activeDoor?: Door;
 
   constructor(
     private readonly map: TileMap,
     player: Player,
     npcs: NPC[],
     objects: MapObject[],
-    door: Door | undefined,
+    doors: Door[],
     private readonly camera: Camera,
   ) {
     this.player = player;
     this.npcs = npcs;
     this.objects = objects;
     this.entities = [player, ...this.npcs];
-    this.door = door;
+    this.doors = doors;
 
     this.validateObjects();
     this.validateNpcs();
@@ -58,7 +59,9 @@ export class World {
       return;
     }
 
-    this.door?.update(deltaTime);
+    for (const door of this.doors) {
+      door.update(deltaTime);
+    }
 
     if (this.doorWarpPhase) {
       this.updateDoorWarp(deltaTime);
@@ -121,8 +124,12 @@ export class World {
 
     const doorOverlaysPlayer = this.doorWarpPhase === "entering";
 
-    if (this.door && !doorOverlaysPlayer) {
-      renderer.drawDoor(this.door);
+    for (const door of this.doors) {
+      if (door === this.activeDoor && doorOverlaysPlayer) {
+        continue;
+      }
+
+      renderer.drawDoor(door);
     }
 
     const renderQueue: Array<Entity | MapObject> = [
@@ -143,8 +150,8 @@ export class World {
       }
     }
 
-    if (this.door && doorOverlaysPlayer) {
-      renderer.drawDoor(this.door);
+    if (this.activeDoor && doorOverlaysPlayer) {
+      renderer.drawDoor(this.activeDoor);
     }
 
     for (const object of this.objects) {
@@ -152,6 +159,15 @@ export class World {
         renderer.drawObject(object);
       }
     }
+  }
+
+  public drawPlayerCollision(renderer: Renderer): void {
+    renderer.drawRectangle(
+      this.player.getCollisionX(),
+      this.player.getCollisionY(),
+      this.player.getCollisionWidth(),
+      this.player.getCollisionHeight(),
+    );
   }
 
   public interact(): boolean {
@@ -336,7 +352,7 @@ export class World {
     return this.map;
   }
 
-  public isDoorWarpInProgress(): boolean {
+  public isWarpAnimationInProgress(): boolean {
     return this.doorWarpPhase !== undefined && this.doorWarpPhase !== "complete";
   }
 
@@ -349,12 +365,12 @@ export class World {
 
   public getPendingWarp(): Warp | null {
     if (this.pendingWarp) {
-      if (this.pendingWarp.requiresDoorAnimation) {
+      if (this.pendingWarp.requiresDoorAnimation || this.pendingWarp.requiresEntryAnimation) {
         if (this.doorWarpPhase !== undefined) {
           if (this.doorWarpPhase !== "complete") {
             return null;
           }
-        } else if (!this.door?.isFinished()) {
+        } else if (this.pendingWarp.requiresDoorAnimation && !this.activeDoor?.isFinished()) {
           return null;
         }
       }
@@ -362,6 +378,7 @@ export class World {
       const warp = this.pendingWarp;
       this.pendingWarp = undefined;
       this.doorWarpPhase = undefined;
+      this.activeDoor = undefined;
 
       return warp;
     }
@@ -385,7 +402,12 @@ export class World {
       return null;
     }
 
-    if (!warp.requiresDoorAnimation || !this.door) {
+    if (warp.requiresEntryAnimation === true && warp.entryDirection !== undefined) {
+      this.queueWarp(warp);
+      return null;
+    }
+
+    if (!warp.requiresDoorAnimation || !this.findDoorForWarp(warp)) {
       return warp;
     }
 
@@ -397,17 +419,29 @@ export class World {
   private queueWarp(warp: Warp): void {
     this.pendingWarp = warp;
 
-    if (warp.requiresDoorAnimation === true && warp.entryDirection !== undefined && this.door) {
+    if (warp.requiresDoorAnimation === true && warp.entryDirection !== undefined) {
       this.startDoorWarp(warp);
       return;
     }
 
-    if (warp.requiresDoorAnimation === true && this.door) {
-      this.door?.open();
+    if (warp.requiresEntryAnimation === true && warp.entryDirection !== undefined) {
+      this.startEntryWarp(warp);
+      return;
+    }
+
+    if (warp.requiresDoorAnimation === true) {
+      this.activeDoor = this.findDoorForWarp(warp);
+      this.activeDoor?.open();
     }
   }
 
   private startDoorWarp(warp: Warp): void {
+    this.activeDoor = this.findDoorForWarp(warp);
+
+    if (!this.activeDoor) {
+      return;
+    }
+
     const entryDirection = warp.entryDirection!;
     const frontTile = this.getDoorFrontTile(warp, entryDirection);
 
@@ -416,8 +450,27 @@ export class World {
       this.map.getTilePixelY(frontTile.row),
     );
     this.player.face(entryDirection);
-    this.door?.open();
+    this.activeDoor.open();
     this.doorWarpPhase = "opening";
+  }
+
+  private startEntryWarp(warp: Warp): void {
+    const entryDirection = warp.entryDirection!;
+    const frontTile = this.getDoorFrontTile(warp, entryDirection);
+
+    this.player.setPosition(
+      this.map.getTilePixelX(frontTile.column),
+      this.map.getTilePixelY(frontTile.row),
+    );
+
+    this.player.startScriptedMove(
+      this.map.getTilePixelX(warp.column),
+      this.map.getTilePixelY(warp.row),
+      entryDirection,
+      World.DOOR_ENTRY_DURATION,
+      true,
+    );
+    this.doorWarpPhase = "entering";
   }
 
   private updateDoorWarp(deltaTime: number): void {
@@ -426,7 +479,7 @@ export class World {
     }
 
     if (this.doorWarpPhase === "opening") {
-      if (!this.door?.isFinished()) {
+      if (!this.activeDoor?.isFinished()) {
         return;
       }
 
@@ -469,6 +522,14 @@ export class World {
       case Direction.Right:
         return { column: warp.column - 1, row: warp.row };
     }
+  }
+
+  private findDoorForWarp(warp: Warp): Door | undefined {
+    if (!warp.doorId) {
+      return this.doors[0];
+    }
+
+    return this.doors.find((door) => door.getId() === warp.doorId);
   }
 
   private validateObjects(): void {

@@ -6,12 +6,31 @@ import upPressed from "@/assets/gba/gba-up.png"
 import downPressed from "@/assets/gba/gba-down.png"
 import leftPressed from "@/assets/gba/gba-left.png"
 import rightPressed from "@/assets/gba/gba-right.png"
+import mobileNormal from "@/assets/gba/gba-mobile-0.png"
 import { useInputStore } from "@/stores/input"
-import { computed } from "vue"
+import { computed, onBeforeUnmount, onMounted, ref } from "vue"
 
 const input = useInputStore()
+const isMobileLayout = ref(false)
+let mediaQuery: MediaQueryList | undefined
+
+function syncMobileLayout(event?: MediaQueryListEvent | MediaQueryList) {
+  isMobileLayout.value = event?.matches ?? mediaQuery?.matches ?? false
+}
+
+onMounted(() => {
+  mediaQuery = window.matchMedia("(max-width: 768px), (orientation: portrait)")
+  syncMobileLayout(mediaQuery)
+  mediaQuery.addEventListener("change", syncMobileLayout)
+})
+
+onBeforeUnmount(() => {
+  mediaQuery?.removeEventListener("change", syncMobileLayout)
+})
 
 const overlay = computed(() => {
+  if (isMobileLayout.value) return mobileNormal
+
   if (input.a) return aPressed
   if (input.b) return bPressed
 
@@ -25,7 +44,7 @@ const overlay = computed(() => {
 </script>
 
 <template>
-  <div class="gba">
+  <div class="gba" :class="{ 'gba--mobile': isMobileLayout }">
     <div class="screen">
       <slot />
     </div>
@@ -37,7 +56,7 @@ const overlay = computed(() => {
 <style scoped>
 .gba {
   position: relative;
-  width: 1300px;
+  width: min(1300px, 100vw);
   margin: auto;
 }
 
@@ -60,10 +79,22 @@ const overlay = computed(() => {
   top: 18.5%;
 
   width: 45.3%;
-    height: 56.7%;
+  height: 56.7%;
 
   overflow: hidden;
 
   z-index: 1;
+}
+
+.gba--mobile {
+  width: min(100vw, calc(100dvh * 1973 / 3396));
+}
+
+.gba--mobile .screen {
+  left: 13.3%;
+  top: 10.2%;
+
+  width: 73.5%;
+  height: 30.5%;
 }
 </style>

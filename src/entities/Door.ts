@@ -9,6 +9,7 @@ export class Door {
   private finished = false;
 
   constructor(
+    private readonly id: string,
     private readonly x: number,
     private readonly y: number,
     private readonly sprite: Sprite,
@@ -59,5 +60,9 @@ export class Door {
 
   public getY(): number {
     return this.y;
+  }
+
+  public getId(): string {
+    return this.id;
   }
 }

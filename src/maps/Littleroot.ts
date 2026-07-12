@@ -31,6 +31,7 @@ export async function createLittleroot(assets: AssetManager, doorSprite: Sprite)
 
       requiresDoorAnimation: true,
       entryDirection: Direction.Up,
+      doorId: "lab",
     },
     {
       column: 12,
@@ -55,6 +56,10 @@ export async function createLittleroot(assets: AssetManager, doorSprite: Sprite)
 
       spawnColumn: 8.5,
       spawnRow: 7,
+
+      requiresDoorAnimation: true,
+      entryDirection: Direction.Up,
+      doorId: "house1",
     },
     {
       column: 16,
@@ -67,6 +72,10 @@ export async function createLittleroot(assets: AssetManager, doorSprite: Sprite)
 
       spawnColumn: 1.5,
       spawnRow: 7,
+
+      requiresDoorAnimation: true,
+      entryDirection: Direction.Up,
+      doorId: "house2",
     },
   ];
 
@@ -120,6 +129,10 @@ export async function createLittleroot(assets: AssetManager, doorSprite: Sprite)
     tileMap: map,
     npcs: [],
     objects,
-    door: new Door(143, map.getTilePixelY(16), doorSprite),
+    doors: [
+      new Door("lab", 143, map.getTilePixelY(16), doorSprite),
+      new Door("house1", map.getTilePixelX(7), map.getTilePixelY(8), doorSprite),
+      new Door("house2", map.getTilePixelX(16), map.getTilePixelY(8), doorSprite),
+    ],
   };
 }

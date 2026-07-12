@@ -28,7 +28,19 @@ export async function createLab(assets: AssetManager): Promise<GameMap> {
       destination: MapId.Littleroot,
 
       spawnColumn: 9,
-      spawnRow: 17,
+      spawnRow: 17.5,
+    },
+    {
+      column: 7,
+      row: 12.6,
+
+      width: 16,
+      height: 5,
+
+      destination: MapId.Littleroot,
+
+      spawnColumn: 9,
+      spawnRow: 17.5,
     },
   ];
 

@@ -14,5 +14,8 @@ export interface Warp {
   readonly spawnRow: number;
 
   readonly requiresDoorAnimation?: boolean;
+  readonly requiresEntryAnimation?: boolean;
   readonly entryDirection?: Direction;
+  readonly spawnDirection?: Direction;
+  readonly doorId?: string;
 }

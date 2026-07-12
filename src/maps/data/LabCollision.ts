@@ -18,7 +18,7 @@ const SMALL: TileType[][] = [
   [F, W, F, F, F, F, F, F, F, F, F, W, W],
   [W, W, F, F, F, F, F, F, F, F, F, W, W],
   [W, W, F, F, F, F, F, F, F, F, F, W, W],
-  [F, F, F, W, F, F, P, F, F, F, F, F, F],
+  [F, F, F, W, F, F, P, P, F, F, F, F, F],
 ];
 
 export function createCollisionGrid(): TileType[][] {

@@ -259,19 +259,19 @@ export class Player extends Entity {
   }
 
   public override getCollisionX(): number {
-    return this.x + 2;
+    return this.x + 4;
   }
 
   public override getCollisionY(): number {
-    return this.y + 4;
+    return this.y + 6;
   }
 
   public override getCollisionWidth(): number {
-    return 12;
+    return 8;
   }
 
   public override getCollisionHeight(): number {
-    return 12;
+    return 7;
   }
 
   public getDirection(): Direction {

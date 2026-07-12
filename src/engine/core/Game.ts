@@ -12,6 +12,7 @@ import { AudioManager } from "@/audio/AudioManager";
 import { MapId, MapManager } from "../map/MapManager";
 import { createDoorSprite } from "@/assets/sprites/DoorSprite";
 import { TileType } from "../map/TileType";
+import type { Direction } from "@/entities/Direction";
 
 type TransitionPhase = "none" | "fadeOut" | "loading" | "fadeIn";
 
@@ -37,6 +38,7 @@ export class Game {
     id: MapId;
     spawnColumn: number;
     spawnRow: number;
+    spawnDirection?: Direction;
   };
 
   constructor(canvas: HTMLCanvasElement) {
@@ -85,7 +87,7 @@ export class Game {
 
     this.world.update(deltaTime);
 
-    if (this.world.isDoorWarpInProgress()) {
+    if (this.world.isWarpAnimationInProgress()) {
       this.input.endFrame();
       return;
     }
@@ -96,7 +98,8 @@ export class Game {
 
     if (warp) {
       this.startMapTransition(warp.destination, warp.spawnColumn, warp.spawnRow, {
-        skipFadeOut: warp.requiresDoorAnimation === true,
+        skipFadeOut: warp.requiresDoorAnimation === true || warp.requiresEntryAnimation === true,
+        spawnDirection: warp.spawnDirection,
       });
     }
 
@@ -106,8 +109,9 @@ export class Game {
   private render = (): void => {
     this.renderer.clear();
     this.world.render(this.renderer);
+    this.world.drawPlayerCollision(this.renderer);
     this.renderer.drawCollision(this.world.getTileMap());
-    this.renderer.drawWarps(this.world.getTileMap());
+    // this.renderer.drawWarps(this.world.getTileMap());
 
     if (this.transitionOpacity > 0) {
       this.renderer.fadeToBlack(this.transitionOpacity);
@@ -122,7 +126,12 @@ export class Game {
     return this.audio;
   }
 
-  private async loadMap(id: MapId, spawnColumn?: number, spawnRow?: number): Promise<void> {
+  private async loadMap(
+    id: MapId,
+    spawnColumn?: number,
+    spawnRow?: number,
+    spawnDirection?: Direction,
+  ): Promise<void> {
     const gameMap = await this.maps.load(id);
     const map = gameMap.tileMap;
 
@@ -139,7 +148,7 @@ export class Game {
       this.player,
       gameMap.npcs,
       gameMap.objects ?? [],
-      gameMap.door,
+      gameMap.doors ?? [],
       this.camera,
     );
 
@@ -157,6 +166,11 @@ export class Game {
     await this.audio.play(map.getMusic());
 
     this.player.setPosition(playerX, playerY);
+
+    if (spawnDirection !== undefined) {
+      this.player.face(spawnDirection);
+    }
+
     this.player.resetWarpCooldown();
 
     this.camera.follow(
@@ -168,7 +182,9 @@ export class Game {
 
     this.world = nextWorld;
 
-    gameMap.door?.reset();
+    for (const door of gameMap.doors ?? []) {
+      door.reset();
+    }
 
     this.playerWasInGrass = this.world.getPlayerTile() === TileType.Grass;
   }
@@ -191,7 +207,7 @@ export class Game {
     id: MapId,
     spawnColumn: number,
     spawnRow: number,
-    options: { skipFadeOut?: boolean } = {},
+    options: { skipFadeOut?: boolean; spawnDirection?: Direction } = {},
   ): void {
     if (this.loadingMap) {
       return;
@@ -203,6 +219,7 @@ export class Game {
       id,
       spawnColumn,
       spawnRow,
+      spawnDirection: options.spawnDirection,
     };
 
     if (options.skipFadeOut === true) {
@@ -247,7 +264,12 @@ export class Game {
       return;
     }
 
-    void this.loadMap(target.id, target.spawnColumn, target.spawnRow).then(() => {
+    void this.loadMap(
+      target.id,
+      target.spawnColumn,
+      target.spawnRow,
+      target.spawnDirection,
+    ).then(() => {
       this.transitionPhase = "fadeIn";
     }).catch((error: unknown) => {
       this.transitionOpacity = 0;
