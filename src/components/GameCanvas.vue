@@ -16,6 +16,7 @@ let game: Game;
 const speaker = ref("");
 const text = ref("");
 const visible = ref(false);
+const canAdvanceDialogue = ref(false);
 const activeOverlay = ref<"none" | "startMenu" | "pokedex" | "playerCard">("none");
 const menuIndex = ref(0);
 const pokedexIndex = ref(0);
@@ -48,6 +49,7 @@ function updateUI() {
   visible.value = dialogue.isActive();
   speaker.value = dialogue.getSpeaker();
   text.value = dialogue.getCurrentLine();
+  canAdvanceDialogue.value = dialogue.isCurrentLineComplete();
   game.setPaused(activeOverlay.value !== "none");
 
   uiLoop = requestAnimationFrame(updateUI);
@@ -349,6 +351,7 @@ onBeforeUnmount(() => {
       v-if="visible"
       :speaker="speaker"
       :text="text"
+      :can-advance="canAdvanceDialogue"
     />
     <StartMenu
       v-if="activeOverlay === 'startMenu'"

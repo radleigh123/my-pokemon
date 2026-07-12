@@ -84,6 +84,20 @@ export class Game {
       return;
     }
 
+    const dialogue = this.world.getDialogue();
+
+    if (dialogue.isActive()) {
+      dialogue.update(deltaTime, this.input.isPressed(Key.B));
+
+      if (this.input.isJustPressed(Key.B) && dialogue.isCurrentLineComplete()) {
+        dialogue.confirm();
+        this.audio.button();
+      }
+
+      this.input.endFrame();
+      return;
+    }
+
     if (this.input.isJustPressed(Key.B)) {
       if (this.world.interact()) {
         this.audio.button();
@@ -119,7 +133,7 @@ export class Game {
   private render = (): void => {
     this.renderer.clear();
     this.world.render(this.renderer);
-    this.world.drawPlayerCollision(this.renderer);
+    // this.world.drawPlayerCollision(this.renderer);
     // this.renderer.drawCollision(this.world.getTileMap());
     // this.renderer.drawWarps(this.world.getTileMap());
 

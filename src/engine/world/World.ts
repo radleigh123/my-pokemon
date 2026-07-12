@@ -180,7 +180,6 @@ export class World {
 
   public interact(): boolean {
     if (this.dialogue.isActive()) {
-      this.dialogue.next();
       return true;
     }
 

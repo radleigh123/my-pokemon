@@ -58,8 +58,22 @@ export async function createLab(assets: AssetManager): Promise<GameMap> {
       () => new Dialogue(
         "Professor Birch",
         storyProgress.isMenuUnlocked
-          ? ["You can now access the pokedex through the menu (Press ENTER)"]
-          : ["I need you to find the kid that borrowed the POKeDEX."],
+          ? [
+            "Let me fix that pokedex real quick.",
+            "....",
+            "....",
+            "....",
+            "....",
+            "You can now access the pokedex through the menu (Press ENTER)"
+          ]
+          : [
+            "Welcome to our Littleroot town. My name is Professor Birch Tree.",
+            "You're probably wondering, where's the starter pokemons?",
+            "Well...",
+            "There isn't, the developer of this game got tired and went on a different path, the shab-",
+            "...the good path",
+            "I need you to find the kid that borrowed the POKeDEX."
+          ],
       ),
       Direction.Down,
       () => {

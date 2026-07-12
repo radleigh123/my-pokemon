@@ -2,6 +2,7 @@
 defineProps<{
   speaker: string
   text: string
+  canAdvance: boolean
 }>()
 </script>
 
@@ -15,7 +16,10 @@ defineProps<{
       {{ text }}
     </div>
 
-    <div class="arrow">
+    <div
+      v-if="canAdvance"
+      class="arrow"
+    >
       ▼
     </div>
   </div>
