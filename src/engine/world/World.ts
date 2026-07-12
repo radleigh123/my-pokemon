@@ -218,6 +218,7 @@ export class World {
         npc.getCollisionHeight(),
       )) {
         npc.face(opposite(this.player.getDirection()));
+        npc.interact();
         this.dialogue.start(npc.getDialogue());
         return true;
       }

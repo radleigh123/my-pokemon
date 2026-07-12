@@ -11,6 +11,7 @@ import { Dialogue } from "@/dialogue/Dialogue";
 import { Direction } from "@/entities/Direction";
 import { MapId } from "@/engine/map/MapManager";
 import type { Warp } from "@/engine/map/Warp";
+import { storyProgress } from "@/story/StoryProgress";
 
 export async function createLab(assets: AssetManager): Promise<GameMap> {
   const image = await assets.loadImage(lab);
@@ -54,13 +55,21 @@ export async function createLab(assets: AssetManager): Promise<GameMap> {
       96,
       64,
       npcSprite,
-      new Dialogue("Professor Oak", [
-        "This is Biiiiirrrccchhh!!!",
-        "Choose my Poke-",
-        "...",
-        "I mean choose your starter pokemon.",
-      ]),
+      () => new Dialogue(
+        "Professor Birch",
+        storyProgress.isMenuUnlocked
+          ? ["You can now access the pokedex through the menu (Press ENTER)"]
+          : ["I need you to find the kid that borrowed the POKeDEX."],
+      ),
       Direction.Down,
+      () => {
+        if (storyProgress.hasReceivedPokedexFromKid) {
+          storyProgress.isMenuUnlocked = true;
+          return;
+        }
+
+        storyProgress.hasTalkedToBirchIntro = true;
+      },
     ),
   ];
 

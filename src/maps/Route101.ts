@@ -9,6 +9,7 @@ import type { Warp } from "@/engine/map/Warp";
 import { Direction } from "@/entities/Direction";
 import { NPC } from "@/entities/NPC";
 import { createKidNpcSprite } from "@/assets/sprites/NpcSprite";
+import { storyProgress } from "@/story/StoryProgress";
 
 import route101 from "@/assets/maps/route101-383x318.png";
 import { createCollisionGrid } from "./data/Route101Collision";
@@ -56,9 +57,13 @@ export async function createRoute101(assets: AssetManager): Promise<GameMap> {
       new Dialogue("Kid", [
         "Your team destroyed the turret.",
         "Our turret is under attack.",
-        "Okay here is POKeDEX, you can press ENTER, to open up the menu.",
+        "Okay here's thee POKeDEX.",
+        "Go to the professor, to fix the pokedex",
       ]),
       Direction.Down,
+      () => {
+        storyProgress.hasReceivedPokedexFromKid = true;
+      },
     ),
   ];
 

@@ -7,6 +7,7 @@ import PokedexScreen from "./PokedexScreen.vue";
 import PlayerCardScreen from "./PlayerCardScreen.vue";
 import StartMenu from "./StartMenu.vue";
 import { pokedexPlaceholders } from "@/data/pokedexPlaceholders";
+import { storyProgress } from "@/story/StoryProgress";
 
 const canvas = ref<HTMLCanvasElement>();
 
@@ -64,6 +65,11 @@ function onKeyDown(event: KeyboardEvent): void {
     }
 
     if (visible.value && activeOverlay.value === "none") {
+      return;
+    }
+
+    if (!storyProgress.isMenuUnlocked && activeOverlay.value === "none") {
+      event.preventDefault();
       return;
     }
 
