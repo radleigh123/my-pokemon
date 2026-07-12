@@ -22,7 +22,7 @@ const showUnmutePrompt = ref(true)
 const video = ref<HTMLVideoElement>()
 
 function onKeydown(e: KeyboardEvent) {
-  if (e.code === "Enter" || e.code === "KeyZ") {
+  if (e.code === "Enter" || e.code === "KeyX") {
     emit("start")
   }
 }
@@ -75,8 +75,14 @@ function unmute() {
   background: rgba(0, 0, 0, 0.7);
   border-radius: 999px;
 
-  font-size: 14px;
-  font-weight: bold;
+  font-family: var(--game-font);
+  font-size: calc(14px * 0.9);
+  font-synthesis: none;
+  font-weight: 400;
+  letter-spacing: 0;
+  text-shadow: none;
+  -webkit-font-smoothing: none;
+  -moz-osx-font-smoothing: unset;
 
   pointer-events: none;
   user-select: none;

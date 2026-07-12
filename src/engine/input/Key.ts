@@ -4,8 +4,8 @@ export enum Key {
   Left = "ArrowLeft",
   Right = "ArrowRight",
 
-  A = "KeyZ",
-  B = "KeyX",
+  A = "KeyX",
+  B = "KeyZ",
 
   Start = "Enter",
   Select = "Backspace",

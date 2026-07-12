@@ -41,13 +41,19 @@ defineProps<{
 
   box-sizing: border-box;
 
-  font-family: monospace;
+  font-family: var(--game-font);
+  font-synthesis: none;
+  font-weight: 400;
+  letter-spacing: 0;
+  text-shadow: none;
+  -webkit-font-smoothing: none;
+  -moz-osx-font-smoothing: unset;
 
   z-index: 10;
 }
 
 .speaker {
-  font-weight: bold;
+  font-weight: 700;
   margin-bottom: 6px;
 }
 

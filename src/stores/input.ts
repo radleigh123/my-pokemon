@@ -8,8 +8,8 @@ const keyCodeByButton: Record<InputButton, string> = {
   down: "ArrowDown",
   left: "ArrowLeft",
   right: "ArrowRight",
-  a: "KeyZ",
-  b: "KeyX",
+  a: "KeyX",
+  b: "KeyZ",
   start: "Enter",
   select: "Backspace",
 }
@@ -77,11 +77,11 @@ export const useInputStore = defineStore("input", () => {
         right.value = true
         break
 
-      case "KeyZ":
+      case "KeyX":
         a.value = true
         break
 
-      case "KeyX":
+      case "KeyZ":
         b.value = true
         break
 
@@ -113,11 +113,11 @@ export const useInputStore = defineStore("input", () => {
         right.value = false
         break
 
-      case "KeyZ":
+      case "KeyX":
         a.value = false
         break
 
-      case "KeyX":
+      case "KeyZ":
         b.value = false
         break
 

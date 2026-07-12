@@ -74,7 +74,7 @@ export class Game {
       return;
     }
 
-    if (this.input.isJustPressed(Key.A)) {
+    if (this.input.isJustPressed(Key.B)) {
       if (this.world.interact()) {
         this.audio.button();
       }
