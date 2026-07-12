@@ -6,6 +6,9 @@ import { MapId } from "@/engine/map/MapManager";
 import type { MapObject } from "@/engine/map/MapObject";
 import { TileMap } from "@/engine/map/TileMap";
 import type { Warp } from "@/engine/map/Warp";
+import { Direction } from "@/entities/Direction";
+import { NPC } from "@/entities/NPC";
+import { createKidNpcSprite } from "@/assets/sprites/NpcSprite";
 
 import route101 from "@/assets/maps/route101-383x318.png";
 import { createCollisionGrid } from "./data/Route101Collision";
@@ -44,9 +47,24 @@ export async function createRoute101(assets: AssetManager): Promise<GameMap> {
     },
   ];
 
+  const kidSprite = await createKidNpcSprite(assets);
+  const npcs = [
+    new NPC(
+      map.getTilePixelX(7),
+      map.getTilePixelY(2),
+      kidSprite,
+      new Dialogue("Kid", [
+        "Your team destroyed the turret.",
+        "Our turret is under attack.",
+        "Okay here is POKeDEX, you can press ENTER, to open up the menu.",
+      ]),
+      Direction.Down,
+    ),
+  ];
+
   return {
     tileMap: map,
-    npcs: [],
+    npcs,
     objects,
   };
 }

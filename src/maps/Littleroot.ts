@@ -12,6 +12,8 @@ import { createCollisionGrid } from "./data/LittlerootCollision";
 import type { Sprite } from "@/engine/animation/Sprite";
 import { Door } from "@/entities/Door";
 import { Direction } from "@/entities/Direction";
+import { NPC } from "@/entities/NPC";
+import { createFatNpcSprite, createPikachuNpcSprite } from "@/assets/sprites/NpcSprite";
 
 export async function createLittleroot(assets: AssetManager, doorSprite: Sprite): Promise<GameMap> {
   const image = await assets.loadImage(littleroot);
@@ -125,9 +127,32 @@ export async function createLittleroot(assets: AssetManager, doorSprite: Sprite)
     },
   ];
 
+  const fatNpcSprite = await createFatNpcSprite(assets);
+  const pikachuSprite = await createPikachuNpcSprite(assets);
+
+  const npcs = [
+    new NPC(
+      map.getTilePixelX(8),
+      map.getTilePixelY(3),
+      pikachuSprite,
+      new Dialogue("Pikachu", ["Poke poke...", "Pokemon"]),
+      Direction.Down,
+    ),
+    new NPC(
+      map.getTilePixelX(15),
+      map.getTilePixelY(14),
+      fatNpcSprite,
+      new Dialogue("Man", [
+        "I saw the kid, recently going to the forest. He was carrying a POKeDEX",
+        "Better watch out for that Pikachu, its weird",
+      ]),
+      Direction.Down,
+    ),
+  ];
+
   return {
     tileMap: map,
-    npcs: [],
+    npcs,
     objects,
     doors: [
       new Door("lab", 143, map.getTilePixelY(16), doorSprite),
